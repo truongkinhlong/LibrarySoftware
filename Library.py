@@ -87,8 +87,8 @@ def login_UI():  # return
             break
         else:
             os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
-            print("Email and Password is invalid\n")
-            print("Please Re-Enter\n")
+            print("Email and Password is INVALID\n")
+            print(f"Please Re-Enter E-Mail and Password to login as {title}\n")
             email = input("E-Mail: ")
             password = input("Password: ")
 
