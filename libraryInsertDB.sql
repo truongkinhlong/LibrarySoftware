@@ -27,4 +27,14 @@ VALUES
     ('MB009', 'Isabella', 'Chen', 'isabella.chen@example.com', 'password9'),
     ('MB010', 'James', 'Liu', 'james.liu@example.com', 'password10');
     
-
+INSERT IGNORE INTO Book (isbn, title, author, publisher, availability, shelf) VALUES 
+('9780345337665', 'The Hobbit', 'J.R.R. Tolkien', 'Ballantine Books', 'Available', 'A'),
+('9780547928227', 'The Lord of the Rings', 'J.R.R. Tolkien', 'Houghton Mifflin Harcourt', 'Available', 'B'),
+('9780765356784', 'A Game of Thrones', 'George R.R. Martin', 'Bantam Books', 'Available', 'C'),
+('9780807281918', 'Harry Potter and the Philosopher''s Stone', 'J.K. Rowling', 'Listening Library', 'Available', 'D'),
+('9781402894629', 'To Kill a Mockingbird', 'Harper Lee', 'Perfection Learning', 'Available', 'F'),
+('9780747532743', 'Harry Potter and the Chamber of Secrets', 'J.K. Rowling', 'Bloomsbury Publishing', 'Available', 'A'),
+('9780007117116', 'The Da Vinci Code', 'Dan Brown', 'Doubleday', 'Available', 'B'),
+('9780545010221', 'The Hunger Games', 'Suzanne Collins', 'Scholastic Press', 'Available', 'C'),
+('9780141033570', '1984', 'George Orwell', 'Penguin Books', 'Available', 'D'),
+('9780763647476', 'The Graveyard Book', 'Neil Gaiman', 'HarperCollins Publishers', 'Available', 'F');

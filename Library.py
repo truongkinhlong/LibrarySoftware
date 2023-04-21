@@ -1,19 +1,21 @@
 import os
 import mysql.connector
 
-#########################################################
+################################################################
 # Function
-#########################################################
+################################################################
 
 
-def front_window():  # RETURN VOID
+# Login Section
+################################################################
+def welcome_window():  # RETURN VOID
     os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
 
-    print("Welcome to CodeX Library \n")
-    print("Choose your login as: \n")
-    print("1. Member\n")
-    print("2. Staff\n")
-    print("3. Admin\n")
+    print("Welcome to CodeX Library")
+    print("Choose your login as:")
+    print("1. Member")
+    print("2. Staff")
+    print("3. Admin")
 
     # Choose Tittle
     choice = input("Please ENTER your choice: ")
@@ -23,11 +25,11 @@ def front_window():  # RETURN VOID
         else:
             os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
 
-            print("You Have Enter INVALID Value!\n")
-            print("Choose your login as: \n")
-            print("1. Member\n")
-            print("2. Staff\n")
-            print("3. Admin\n")
+            print("You Have Enter INVALID Value!")
+            print("Choose your login as:")
+            print("1. Member")
+            print("2. Staff")
+            print("3. Admin")
             choice = input("Please RE-ENTER your choice: ")
 
     # Assign tittle
@@ -76,23 +78,61 @@ def check_login(email, password):  # RETURN True or False
 def login_UI():  # return
     os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
 
-    print(f"Please ENTER E-Mail and Password to login as {title}\n")
+    print(f"Please ENTER E-Mail and Password to login as {title}")
 
     email = input("E-Mail: ")
     password = input("Password: ")
     while True:
         if check_login(email, password):
             os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
-            print("Login Success!!!")
+            print("Login Successfull")
+            print("Press ENTER to continue ...")
+            input
             break
         else:
             os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
-            print("Email and Password is INVALID\n")
-            print(f"Please Re-Enter E-Mail and Password to login as {title}\n")
+            print("Email and Password is INVALID")
+            print(f"Please Re-Enter E-Mail and Password to login as {title}")
             email = input("E-Mail: ")
             password = input("Password: ")
+################################################################
+
+# Member UI & Function
+################################################################
 
 
+def member_UI():
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+
+    print("Member Menu:")
+    print("1. Search Book")
+    print("2. View Your Order")
+    print("3. Edit Personal Information")
+
+    # Make Choice
+    choice = input("ENTER your action: ")
+    while (True):
+        if ("1" <= choice <= "3" and len(choice) == 1):
+            break
+        else:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+
+            print("You Have Enter INVALID Value!")
+            print("Member Menu:")
+            print("1. Search Book")
+            print("2. View Your Order")
+            print("3. Edit Personal Information")
+            choice = input("RE-ENTER your action: ")
+################################################################
+
+
+# MAIN
 connect_to_database()
-front_window()
+welcome_window()
 login_UI()
+if title == "Member":
+    member_UI()
+# if title == "Staff":
+    # staff_UI()
+# if title == "Admin":
+    # admin_UI()
