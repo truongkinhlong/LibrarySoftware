@@ -1,31 +1,19 @@
-from tkinter import *
-import tkinter.messagebox as tmsg
+import os
 
-def login():
-    username = user_entry.get()
-    password = pass_entry.get()
-    if username == "admin" and password == "1234":
-        tmsg.showinfo("Success", "Logged in successfully")
-    else:
-        tmsg.showerror("Error", "Invalid credentials")
 
-root = Tk()
-root.geometry("500x300")
-root.title("Login Window")
+os.system("cls" if os.name == "nt" else "clear")
 
-user_label = Label(root, text="Username")
-user_label.pack()
 
-user_entry = Entry(root)
-user_entry.pack()
+def open_window():
+    # Clear the screen
+    #os.system("cls" if os.name == "nt" else "clear")
 
-pass_label = Label(root, text="Password")
-pass_label.pack()
+    print("Welcome to CodeX Library \n")
+    print("Choose your login as: \n")
+    print("1. Member\n")
+    print("2. Staff\n")
+    print("3. Admin\n")
+    choice = input("Please enter your choice: ")
 
-pass_entry = Entry(root)
-pass_entry.pack()
 
-login_button = Button(root, text="Login", command=login)
-login_button.pack()
-
-root.mainloop()
+open_window()
