@@ -39,11 +39,15 @@ CREATE TABLE IF NOT EXISTS Book (
 
 CREATE TABLE IF NOT EXISTS `Order` (
 	orderID VARCHAR(6) PRIMARY KEY,
-    staffID VARCHAR(5) FOREIGN KEY NOT NULL,
-    memberID VARCHAR(5) FOREIGN KEY NOT NULL,
-    isbn VARCHAR(13) FOREIGN KEY NOT NULL,
+    staffID VARCHAR(5) NOT NULL,
+    memberID VARCHAR(5) NOT NULL,
+    isbn VARCHAR(13) NOT NULL,
     rentDate DATETIME NOT NULL,
     dueDate DATETIME NOT NULL,
-    status ENUM('On Loan', 'Overdue', 'Return')
-	returnDate DATETIME
+    status ENUM('On Loan', 'Overdue', 'Return'),
+	returnDate DATETIME,
+    
+    FOREIGN KEY (staffID) REFERENCES Staff(staffID),
+    FOREIGN KEY (memberID) REFERENCES Member(memberID),
+    FOREIGN KEY (isbn) REFERENCES Book(isbn)
 );
