@@ -36,3 +36,14 @@ CREATE TABLE IF NOT EXISTS Book (
     availability ENUM('Available', 'On Loan') NOT NULL,
     shelf VARCHAR(1) NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS `Order` (
+	orderID VARCHAR(6) PRIMARY KEY,
+    staffID VARCHAR(5) FOREIGN KEY NOT NULL,
+    memberID VARCHAR(5) FOREIGN KEY NOT NULL,
+    isbn VARCHAR(13) FOREIGN KEY NOT NULL,
+    rentDate DATETIME NOT NULL,
+    dueDate DATETIME NOT NULL,
+    status ENUM('On Loan', 'Overdue', 'Return')
+	returnDate DATETIME
+);
