@@ -43,8 +43,8 @@ CREATE TABLE IF NOT EXISTS `Order` (
     memberID VARCHAR(5) NOT NULL,
     isbn VARCHAR(13) NOT NULL,
     rentDate DATETIME NOT NULL,
-    dueDate DATETIME NOT NULL,
-    status ENUM('On Loan', 'Overdue', 'Return'),
+    dueDate DATE NOT NULL,
+    status ENUM('On Loan', 'Overdue', 'Returned'),
 	returnDate DATETIME,
     
     FOREIGN KEY (staffID) REFERENCES Staff(staffID),

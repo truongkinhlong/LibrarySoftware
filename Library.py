@@ -1,19 +1,58 @@
 import os
 import mysql.connector
 
+# classes
+
+
+class ViewOrder:
+    def __init__(self, orderID, staffID, staffFName, staffLName, memberID, memberFName, memberLName, bookIsbn, bookTitle, bookAuthor, rentDate, dueDate, status, returnDate):
+        self.orderID = orderID
+        self.staffID = staffID
+        self.staffFName = staffFName
+        self.staffLName = staffLName
+        self.memberID = memberID
+        self.memberFName = memberFName
+        self.memberLName = memberLName
+        self.bookIsbn = bookIsbn
+        self.bookTitle = bookTitle
+        self.bookAuthor = bookAuthor
+        self.rentDate = rentDate
+        self.dueDate = dueDate
+        self.status = status
+        self.returnDate = returnDate
+
 ################################################################
 # Function
 ################################################################
 # Database Function
+
+
 # return dbcursor.fetchall()
-
-
 def search_using_keywords_MySQL(inputString, attribute, table):
     # Extract keywords
     keywords = inputString.split(" ")
 
     # Build SQL to search
     sql = f"SELECT * FROM {table} WHERE "
+    for i in range(len(keywords)):
+        if i == 0:
+            sql += f"{attribute} LIKE '%" + keywords[i] + "%'"
+        else:
+            sql += f" OR {attribute} LIKE '%" + keywords[i] + "%'"
+
+    # Execute the SQL
+    dbcursor.execute(sql)
+
+    # Return Fetchall result from SQL
+    return dbcursor.fetchall()
+
+
+def search_using_keywords_MySQL(inputString, attribute, table, atributesToShow):
+    # Extract keywords
+    keywords = inputString.split(" ")
+
+    # Build SQL to search
+    sql = f"SELECT {atributesToShow} FROM {table} WHERE "
     for i in range(len(keywords)):
         if i == 0:
             sql += f"{attribute} LIKE '%" + keywords[i] + "%'"
@@ -83,12 +122,13 @@ def check_login(email, password):  # RETURN True or False
     # Execute the SELECT query to check if the email and password combination exists
     sql = f"SELECT * FROM {title} WHERE email = %s AND password = %s"
 
-    #parameters = (email, password)
+    # parameters = (email, password)
     parameters = (email, password)
     dbcursor.execute(sql, parameters)
 
     # Fetch the result of the query
     result = dbcursor.fetchone()
+
     global currID
     currID = result[0]
 
@@ -197,7 +237,8 @@ def search_book():
 def display_view_order_menu():
     os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
 
-    results = search_using_keywords_MySQL(currID, "memberID", "order")
+    results = search_using_keywords_MySQL(
+        currID, "memberID", "`order`", "orderID, isbn, status")
     if len(results) > 0:
         for order in results:
             print(order)
@@ -209,7 +250,48 @@ def display_view_order_menu():
     print("(Enter '-1' to LOG OUT)")
 
 
-# def view_order_detail()
+def view_order_detail(orderID):
+    # Build SQL to search
+    sql = f"""SELECT 
+    o.orderID, 
+    o.staffID, 
+    s.fName AS staffFName, 
+    s.lName AS staffLName, 
+    o.memberID, 
+    m.fName AS memberFName, 
+    m.lName AS memberLName, 
+    o.isbn, 
+    b.title AS bookTitle, 
+    b.author AS bookAuthor, 
+    o.rentDate, 
+    o.dueDate, 
+    o.status, 
+    o.returnDate
+FROM 
+    `Order` o 
+    INNER JOIN Staff s ON o.staffID = s.staffID 
+    INNER JOIN Member m ON o.memberID = m.memberID 
+    INNER JOIN Book b ON o.isbn = b.isbn
+    where orderID = {orderID}"""
+
+    # Execute the SQL
+    dbcursor.execute(sql)
+
+    # Return Fetchall result from SQL
+    result = (dbcursor.fetchone())
+    order = ViewOrder(result[0], result[1], result[2], result[3], result[4], result[5], result[6],
+                      result[7], result[8], result[9], result[10], result[11], result[12], result[13])
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print(f"""OrderID: {order.orderID} Status: {order.status}
+StaffID: {order.staffID}  Name: {order.staffFName} {order.staffLName}
+MemberID: {order.memberID} Name: {order.memberFName} {order.memberLName}
+Book ISBN: {order.bookIsbn}
+Book Title: {order.bookTitle}
+Book Author: {order.bookAuthor}
+Rent Date: {order.rentDate}       Due Date: {order.dueDate}
+Return Date {order.returnDate}""")
+    input("(Press ENTER to return)")
+
 
 def view_your_order():
     while True:
@@ -221,8 +303,9 @@ def view_your_order():
             if ("000000" <= choice <= "999999" and len(choice) == 6) or choice == "-1":
                 if choice == "-1":
                     break
-                # else:
-                    # view_order_detail()
+                else:
+                    view_order_detail(choice)
+                    break
             else:
                 # CLEAR SCREEN
                 display_view_order_menu()
