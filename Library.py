@@ -47,7 +47,7 @@ def search_using_keywords_MySQL(inputString, attribute, table):
     return dbcursor.fetchall()
 
 
-def search_using_keywords_MySQL(inputString, attribute, table, atributesToShow):
+def search_using_keywords_MySQL_selective_attribute(inputString, attribute, table, atributesToShow):
     # Extract keywords
     keywords = inputString.split(" ")
 
@@ -99,12 +99,11 @@ def welcome_window():  # RETURN VOID
             break
         else:
             os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
-
-            print("You Have Enter INVALID Value!")
             print("Choose your login as:")
             print("1. Member")
             print("2. Staff")
             print("3. Admin")
+            print("You Have Enter INVALID Value!")
             choice = input("Please RE-ENTER your choice: ")
 
     # Assign tittle
@@ -130,10 +129,10 @@ def check_login(email, password):  # RETURN True or False
     result = dbcursor.fetchone()
 
     global currID
-    currID = result[0]
 
     # Check if the result is not None (i.e., the email and password combination exists)
     if result is not None:
+        currID = result[0]
         return True
     else:
         return False
@@ -237,7 +236,7 @@ def search_book():
 def display_view_order_menu():
     os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
 
-    results = search_using_keywords_MySQL(
+    results = search_using_keywords_MySQL_selective_attribute(
         currID, "memberID", "`order`", "orderID, isbn, status")
     if len(results) > 0:
         for order in results:
@@ -289,7 +288,7 @@ Book ISBN: {order.bookIsbn}
 Book Title: {order.bookTitle}
 Book Author: {order.bookAuthor}
 Rent Date: {order.rentDate}       Due Date: {order.dueDate}
-Return Date {order.returnDate}""")
+Return Date: {order.returnDate}""")
     input("(Press ENTER to return)")
 
 
