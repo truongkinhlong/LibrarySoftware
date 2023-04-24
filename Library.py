@@ -21,6 +21,15 @@ class ViewOrder:
         self.status = status
         self.returnDate = returnDate
 
+
+class PersonInfo:
+    def __init__(self, ID, fName, lName, email, password):
+        self.ID = ID
+        self.fName = fName
+        self.lName = lName
+        self.email = email
+        self.password = password
+
 ################################################################
 # Function
 ################################################################
@@ -104,7 +113,7 @@ def welcome_window():  # RETURN VOID
             print("2. Staff")
             print("3. Admin")
             print("You Have Enter INVALID Value!")
-            choice = input("Please RE-ENTER your choice: ")
+            choice = input("Please ENTER your choice: ")
 
     # Assign tittle
     global title
@@ -128,11 +137,12 @@ def check_login(email, password):  # RETURN True or False
     # Fetch the result of the query
     result = dbcursor.fetchone()
 
-    global currID
+    global person
 
     # Check if the result is not None (i.e., the email and password combination exists)
     if result is not None:
-        currID = result[0]
+        person = PersonInfo(result[0], result[1],
+                            result[2], result[3], result[4])
         return True
     else:
         return False
@@ -155,7 +165,7 @@ def login_UI():  # return
         else:
             os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
             print("Email and Password is INVALID")
-            print(f"Please Re-Enter E-Mail and Password to login as {title}")
+            print(f"Please Enter E-Mail and Password to login as {title}")
             email = input("E-Mail: ")
             password = input("Password: ")
 ################################################################
@@ -225,7 +235,7 @@ def search_book():
             else:
                 display_search_book_menu()
                 print("!!!You Have Enter INVALID Value!!!")
-                choice = input("RE-ENTER your action: ")
+                choice = input("ENTER your action: ")
         if choice == "-1":
             break
 ###################################################################################################
@@ -237,7 +247,7 @@ def display_view_order_menu():
     os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
 
     results = search_using_keywords_MySQL_selective_attribute(
-        currID, "memberID", "`order`", "orderID, isbn, status")
+        person.ID, "memberID", "`order`", "orderID, isbn, status")
     if len(results) > 0:
         for order in results:
             print(order)
@@ -251,25 +261,25 @@ def display_view_order_menu():
 
 def view_order_detail(orderID):
     # Build SQL to search
-    sql = f"""SELECT 
-    o.orderID, 
-    o.staffID, 
-    s.fName AS staffFName, 
-    s.lName AS staffLName, 
-    o.memberID, 
-    m.fName AS memberFName, 
-    m.lName AS memberLName, 
-    o.isbn, 
-    b.title AS bookTitle, 
-    b.author AS bookAuthor, 
-    o.rentDate, 
-    o.dueDate, 
-    o.status, 
+    sql = f"""SELECT
+    o.orderID,
+    o.staffID,
+    s.fName AS staffFName,
+    s.lName AS staffLName,
+    o.memberID,
+    m.fName AS memberFName,
+    m.lName AS memberLName,
+    o.isbn,
+    b.title AS bookTitle,
+    b.author AS bookAuthor,
+    o.rentDate,
+    o.dueDate,
+    o.status,
     o.returnDate
-FROM 
-    `Order` o 
-    INNER JOIN Staff s ON o.staffID = s.staffID 
-    INNER JOIN Member m ON o.memberID = m.memberID 
+FROM
+    `Order` o
+    INNER JOIN Staff s ON o.staffID = s.staffID
+    INNER JOIN Member m ON o.memberID = m.memberID
     INNER JOIN Book b ON o.isbn = b.isbn
     where orderID = {orderID}"""
 
@@ -309,12 +319,81 @@ def view_your_order():
                 # CLEAR SCREEN
                 display_view_order_menu()
                 print("!!!You Have Enter INVALID Value!!!")
-                choice = input("RE-ENTER OrderID: ")
+                choice = input("ENTER OrderID: ")
         if choice == "-1":
             break
 
 
 ###################################################################################################
+# edit_personal_information menu()
+###################################################################################################
+def display_edit_personal_information_menu():
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print(f"""ID: {person.ID}
+Name: {person.fName} {person.lName}
+Email: {person.email}
+Password: {"*" * 10}
+Menu:
+1. Edit Name
+2. Edit Email
+3. Edit Password
+(Enter '-1' to LOG OUT)""")
+
+
+def update_name_SQL(fName, lName):
+    sql = f"UPDATE {title} SET lName = '{lName}', fName = '{fName}'WHERE memberID = '{person.ID}';"
+    dbcursor.execute(sql)
+
+
+def edit_name():
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("Edit Name")
+    fName = input("Enter New Frist Name:")
+    lName = input("Enter New Last Name:")
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print(f"This is your New Name: {fName} {lName}")
+    confirm = ("Please Enter 'Y'(Yes) to Confirm or 'N'(NO) Cancel: ")
+    while True:
+        if confirm == "Y" or "y":
+            person.fName = fName
+            person.lName = lName
+            update_name_SQL(fName, lName)
+            break
+        if confirm == "N" or "n":
+            break
+        else:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            print(f"This is your New Name: {fName} {lName}")
+            print("!!!You Have Enter INVALID Value!!!")
+            confirm = ("Please Enter 'Y'(Yes) to Confirm or 'N'(NO) Cancel: ")
+
+
+def edit_personal_information():
+    while True:
+        display_edit_personal_information_menu()
+        # Make Choice
+        choice = input("ENTER your action: ")
+        while (True):
+            if choice == "-1":
+                break
+            if choice == "1":
+                edit_name()
+                break
+            if choice == "2":
+                edit_email()
+                break
+            if choice == "3":
+                edit_password()
+                break
+            else:
+                display_edit_personal_information_menu()
+                print("!!!You Have Enter INVALID Value!!!")
+                choice = input("ENTER your action: ")
+        if choice == "-1":
+            break
+
+###################################################################################################
+
 
 def display_member_menu():
     os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
@@ -340,10 +419,13 @@ def member_UI():
                 if choice == "2":
                     view_your_order()
                     break
+                if choice == "3"
+                edit_personal_information()
+                break
             else:
                 display_member_menu()
                 print("!!!You Have Enter INVALID Value!!!")
-                choice = input("RE-ENTER your action: ")
+                choice = input("ENTER your action: ")
         if choice == "-1":
             break
 
