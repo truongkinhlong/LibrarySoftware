@@ -30,6 +30,16 @@ class PersonInfo:
         self.email = email
         self.password = password
 
+
+class Book:
+    def __int__(self, isbn, title, author, publisher, availability, shelf):
+        self.isbn = isbn
+        self.title = title
+        self.author = author
+        self.publisher = publisher
+        self.availability = availability
+        self.shelf = shelf
+
 ################################################################
 # Function
 ################################################################
@@ -445,6 +455,63 @@ def edit_personal_information():
 ###################################################################################################
 
 
+def display_manage_book_menu():
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("""Manage Book Menu
+1. Insert New Book
+2. Update Book
+3. Delete Book
+(ENTER '-1' to Back)""")
+
+
+def display_new_book_info(newBook):
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print(f"""New Book Information
+ISBN: {newBook.isbn}
+Title: {newBook.title}
+Author: {newBook.author}
+Publisher: {newBook.publisher}
+Shelf: {newBook.shelf}""")
+
+
+def insert_new_book():
+    newBook = Book()
+    while True:
+        os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+        print("Please Insert New Book Information")
+        print("(ISBN, Title, Author, Publisher, Shelf)")
+        newBook.isbn = input("ISBN: ")
+        newBook.title = input("Title: ")
+        newBook.author = input("Author: ")
+        newBook.publisher = input("Publisher: ")
+        newBook.availability = "Available"
+        newBook.shelf = input("Shelf: ")
+        while True:
+
+
+def manage_book():
+    while True:
+        display_manage_book_menu()
+        choice = input("ENTER your action: ")
+        if choice == "-1" and len(choice) == 2:
+            break
+        if choice == "1" and len(choice) == 1:
+            insert_new_book()
+            break
+        if choice == "2" and len(choice) == 1:
+            update_book()
+            break
+        if choice == "3" and len(choice) == 1:
+            delete_book()
+            break
+        else:
+            display_manage_book_menu()
+            print("!!!You Have Enter INVALID Value!!!")
+            choice = input("ENTER your action: ")
+
+    ###################################################################################################
+
+
 def display_member_menu():
     os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
     print("Member Menu:")
@@ -496,6 +563,9 @@ def staff_UI():
         choice = input("ENTER your action: ")
         while (True):
             if choice == "-1" and len(choice) == 2:
+                break
+            if choice == "1" and len(choice) == 1:
+                manage_book()
                 break
 
             if choice == "4" and len(choice) == 1:
