@@ -337,35 +337,85 @@ Menu:
 1. Edit Name
 2. Edit Email
 3. Edit Password
-(Enter '-1' to LOG OUT)""")
+(Enter '-1' to Back)""")
 
 
-def update_name_SQL(fName, lName):
-    sql = f"UPDATE {title} SET lName = '{lName}', fName = '{fName}'WHERE memberID = '{person.ID}';"
+def update_one_attribute_SQL(input, attribute, table, attributeToFind, valueTofind):
+    sql = f"UPDATE  {table} SET {attribute} = '{input}' WHERE {attributeToFind} = '{valueTofind}';"
     dbcursor.execute(sql)
+    db.commit()
 
 
 def edit_name():
     os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
     print("Edit Name")
-    fName = input("Enter New Frist Name:")
-    lName = input("Enter New Last Name:")
+    fName = input("Enter New Frist Name: ")
+    lName = input("Enter New Last Name: ")
     os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
     print(f"This is your New Name: {fName} {lName}")
-    confirm = ("Please Enter 'Y'(Yes) to Confirm or 'N'(NO) Cancel: ")
+    choice = input("Please Enter 'Y'(Yes) to Confirm or 'N'(NO) Cancel: ")
     while True:
-        if confirm == "Y" or "y":
+        if choice == "Y" or "y" and len(choice) == 1:
+            update_one_attribute_SQL(
+                fName, "fName", title, f"{title}ID", person.ID)
+            update_one_attribute_SQL(
+                lName, "lName", title, f"{title}ID", person.ID)
             person.fName = fName
             person.lName = lName
-            update_name_SQL(fName, lName)
             break
-        if confirm == "N" or "n":
+        if choice == "N" or "n" and len(choice) == 1:
             break
         else:
             os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
             print(f"This is your New Name: {fName} {lName}")
             print("!!!You Have Enter INVALID Value!!!")
-            confirm = ("Please Enter 'Y'(Yes) to Confirm or 'N'(NO) Cancel: ")
+            choice = input(
+                "Please Enter 'Y'(Yes) to Confirm or 'N'(NO) Cancel: ")
+
+
+def edit_email():
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("Edit Email")
+    email = input("Enter New Email: ")
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print(f"This is your New Email: {email}")
+    choice = input("Please Enter 'Y'(Yes) to Confirm or 'N'(NO) Cancel: ")
+    while True:
+        if choice == "Y" or "y" and len(choice) == 1:
+            update_one_attribute_SQL(
+                email, "email", title, f"{title}ID", person.ID)
+            person.email = email
+            break
+        if choice == "N" or "n" and len(choice) == 1:
+            break
+        else:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            print(f"This is your New Email: {email}")
+            print("!!!You Have Enter INVALID Value!!!")
+            choice = input(
+                "Please Enter 'Y'(Yes) to Confirm or 'N'(NO) Cancel: ")
+
+
+def edit_password():
+    while True:
+        os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+        print("Edit Password")
+        password1 = input("Enter New Password: ")
+        password2 = input("REPEAT New Password: ")
+        if password1 == password2 and len(password1) != "":
+            update_one_attribute_SQL(
+                password1, "password", title, f"{title}ID", person.ID)
+            person.password = password1
+            print("Your Password has been successfully changed")
+            input("(Press ENTER to Back)")
+            break
+        else:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            print("REPEAT New Password does not match the previous")
+            print("(Enter '-1' to Cancel Process)")
+            choice = input("Press any key to try again")
+            if choice == "-1":
+                break
 
 
 def edit_personal_information():
@@ -374,15 +424,15 @@ def edit_personal_information():
         # Make Choice
         choice = input("ENTER your action: ")
         while (True):
-            if choice == "-1":
+            if choice == "-1" and len(choice) == 2:
                 break
-            if choice == "1":
+            if choice == "1" and len(choice) == 1:
                 edit_name()
                 break
-            if choice == "2":
+            if choice == "2" and len(choice) == 1:
                 edit_email()
                 break
-            if choice == "3":
+            if choice == "3" and len(choice) == 1:
                 edit_password()
                 break
             else:
@@ -410,16 +460,15 @@ def member_UI():
         # Make Choice
         choice = input("ENTER your action: ")
         while (True):
-            if ("1" <= choice <= "3" and len(choice) == 1) or choice == "-1":
-                if choice == "-1":
-                    break
-                if choice == "1":
-                    search_book()
-                    break
-                if choice == "2":
-                    view_your_order()
-                    break
-                if choice == "3"
+            if choice == "-1" and len(choice) == 2:
+                break
+            if choice == "1" and len(choice) == 1:
+                search_book()
+                break
+            if choice == "2" and len(choice) == 1:
+                view_your_order()
+                break
+            if choice == "3" and len(choice) == 1:
                 edit_personal_information()
                 break
             else:
@@ -430,16 +479,78 @@ def member_UI():
             break
 
 
+def display_staff_menu():
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("Staff Menu:")
+    print("1. Manage Book")
+    print("2. Manage Order")
+    print("3. Manage Member")
+    print("4. Edit Personal Information")
+    print("(Enter '-1' to LOG OUT)")
+
+
+def staff_UI():
+    while True:
+        display_staff_menu()
+        # Make Choice
+        choice = input("ENTER your action: ")
+        while (True):
+            if choice == "-1" and len(choice) == 2:
+                break
+
+            if choice == "4" and len(choice) == 1:
+                edit_personal_information()
+                break
+            else:
+                display_staff_menu()
+                print("!!!You Have Enter INVALID Value!!!")
+                choice = input("ENTER your action: ")
+        if choice == "-1":
+            break
+
+
+def display_admin_menu():
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("Admin Menu:")
+    print("1. Manage Book")
+    print("2. Manage Order")
+    print("3. Manage Member")
+    print("4. Manage Staff")
+    print("5. Gennerate Report")
+    print("6. Edit Personal Information")
+    print("(Enter '-1' to LOG OUT)")
+
+
+def admin_UI():
+    while True:
+        display_admin_menu()
+        # Make Choice
+        choice = input("ENTER your action: ")
+        while (True):
+            if choice == "-1" and len(choice) == 2:
+                break
+
+            if choice == "6" and len(choice) == 1:
+                edit_personal_information()
+                break
+            else:
+                display_admin_menu()
+                print("!!!You Have Enter INVALID Value!!!")
+                choice = input("ENTER your action: ")
+        if choice == "-1":
+            break
+
 ################################################################
 
 
 # MAIN
 connect_to_database()
-welcome_window()
-login_UI()
-if title == "Member":
-    member_UI()
-# if title == "Staff":
-    # staff_UI()
-# if title == "Admin":
-    # admin_UI()
+while True:
+    welcome_window()
+    login_UI()
+    if title == "Member":
+        member_UI()
+    if title == "Staff":
+        staff_UI()
+    if title == "Admin":
+        admin_UI()
