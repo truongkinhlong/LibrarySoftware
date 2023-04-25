@@ -2,33 +2,31 @@ USE libraryDatabase;
 
 INSERT IGNORE INTO Admin (adminID, fName, lName, email, password)
 VALUES
-	('AD000', 'Test', 'Test', 'ADTest@Test.com', 'TestAD'), 
-	('AD001', 'Kinh', 'Truong', 'truongkinhlong@gmail.com', 'BLrider301!'); 
+	('AD000', 'Test', 'Test', 'ADTest@Test.com', 'TestAD', 'Active'), 
+	('AD001', 'Kinh', 'Truong', 'truongkinhlong@gmail.com', 'BLrider301!', 'Active'); 
 
 INSERT IGNORE  INTO Staff (staffID, fName, lName, email, password)
 VALUES
-	('ST000', 'Test', 'Test', 'STTest@Test.com', 'TestST'),
-	('ST001', 'Adrian', 'Nguyen', 'ANguyen@gmail.com', 'AdNg001'),
-	('ST002', 'Cerian', 'Jaime', 'CJaime@gmail.com', 'CeJa002'),
-	('ST003', 'Nathan', 'Nguyen', 'NNguyen@gmail.com', 'NaNg003'),
-	('ST004', 'Cooper', 'Tran', 'CTran@gmail.com', 'CoTr004'); 
+	('ST000', 'Test', 'Test', '', '', 'Active'),
+	('ST001', 'Adrian', 'Nguyen', 'ANguyen@gmail.com', 'AdNg001', 'Active'),
+	('ST002', 'Cerian', 'Jaime', 'CJaime@gmail.com', 'CeJa002', 'Active'),
+	('ST003', 'Nathan', 'Nguyen', 'NNguyen@gmail.com', 'NaNg003', 'Active'),
+	('ST004', 'Cooper', 'Tran', 'CTran@gmail.com', 'CoTr004', 'Active'); 
     
 INSERT IGNORE  INTO Member (memberID, fName, lName, email, password)
 VALUES
-	('MB000', 'Test', 'Test', 'MB', 'MB'),
-    ('MB001', 'Alice', 'Jones', 'alice.jones@example.com', 'password1'),
-    ('MB002', 'Bob', 'Smith', 'bob.smith@example.com', 'password2'),
-    ('MB003', 'Charlie', 'Brown', 'charlie.brown@example.com', 'password3'),
-    ('MB004', 'David', 'Lee', 'david.lee@example.com', 'password4'),
-    ('MB005', 'Emily', 'Wang', 'emily.wang@example.com', 'password5'),
-    ('MB006', 'Frank', 'Garcia', 'frank.garcia@example.com', 'password6'),
-    ('MB007', 'Grace', 'Nguyen', 'grace.nguyen@example.com', 'password7'),
-    ('MB008', 'Henry', 'Kim', 'henry.kim@example.com', 'password8'),
-    ('MB009', 'Isabella', 'Chen', 'isabella.chen@example.com', 'password9'),
-    ('MB010', 'James', 'Liu', 'james.liu@example.com', 'password10');
+	('MB000', 'Test', 'Test', '', '', 'Active'),
+    ('MB001', 'Alice', 'Jones', 'alice.jones@example.com', 'password1', 'Active'),
+    ('MB002', 'Bob', 'Smith', 'bob.smith@example.com', 'password2', 'Active'),
+    ('MB003', 'Charlie', 'Brown', 'charlie.brown@example.com', 'password3', 'Active'),
+    ('MB004', 'David', 'Lee', 'david.lee@example.com', 'password4', 'Active'),
+    ('MB005', 'Emily', 'Wang', 'emily.wang@example.com', 'password5', 'Active'),
+    ('MB006', 'Frank', 'Garcia', 'frank.garcia@example.com', 'password6', 'Active'),
+    ('MB007', 'Grace', 'Nguyen', 'grace.nguyen@example.com', 'password7', 'Active'),
+    ('MB008', 'Henry', 'Kim', 'henry.kim@example.com', 'password8', 'Active'),
+    ('MB009', 'Isabella', 'Chen', 'isabella.chen@example.com', 'password9', 'Active'),
+    ('MB010', 'James', 'Liu', 'james.liu@example.com', 'password10', 'Active');
 
-UPDATE Member SET email='test' WHERE memberID='MB000';
-UPDATE Member SET password='test' WHERE memberID='MB000';
 
     
 INSERT IGNORE INTO Book (isbn, title, author, publisher, availability, shelf) VALUES 
@@ -43,14 +41,14 @@ INSERT IGNORE INTO Book (isbn, title, author, publisher, availability, shelf) VA
 ('9780141033570', '1984', 'George Orwell', 'Penguin Books', 'Available', 'D'),
 ('9780763647476', 'The Graveyard Book', 'Neil Gaiman', 'HarperCollins Publishers', 'Available', 'F');
 
-INSERT INTO `Order` (orderID, staffID, memberID, isbn, rentDate, dueDate, status) 
+INSERT IGNORE INTO `Order` (orderID, staffID, memberID, isbn, rentDate, dueDate, status) 
 VALUES
 ('000001', 'ST000', 'MB000', '9780345337665', '2023-04-23 10:00:00', '2023-04-25', 'On Loan'),
 ('000006', 'ST000', 'MB000', '9780547928227', '2023-04-23 10:00:00', '2023-04-27', 'On Loan'),
 ('000004', 'ST000', 'MB000', '9780765356784', '2023-04-23 10:00:00', '2023-04-29', 'On Loan'),
 ('000003', 'ST000', 'MB000', '9781402894629', '2023-04-23 10:00:00', '2023-04-15', 'Overdue');
 
-INSERT INTO `Order` (orderID, staffID, memberID, isbn, rentDate, dueDate, status, returnDate) 
+INSERT IGNORE INTO `Order` (orderID, staffID, memberID, isbn, rentDate, dueDate, status, returnDate) 
 VALUES
 ('000005', 'ST000', 'MB000', '9780141033570', '2023-04-23 10:00:00', '2023-04-19', 'Returned', '2023-04-18 14:21:59'),
 ('000002', 'ST000', 'MB000', '9780007117116', '2023-04-23 10:00:00', '2023-04-17', 'Returned', '2023-04-17 19:14:21');

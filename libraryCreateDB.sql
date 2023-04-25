@@ -6,7 +6,8 @@ CREATE TABLE IF NOT EXISTS Admin (
     fName VARCHAR(50) NOT NULL,
     lName VARCHAR(50) NOT NULL,
     email VARCHAR(100) NOT NULL,
-    password VARCHAR(255) NOT NULL
+    password VARCHAR(255) NOT NULL,
+    status ENUM('Active', 'Disabled') NOT NULL
 );
 ALTER TABLE Admin AUTO_INCREMENT = 1;
 
@@ -15,7 +16,8 @@ CREATE TABLE IF NOT EXISTS Staff (
     fName VARCHAR(50) NOT NULL,
     lName VARCHAR(50) NOT NULL,
     email VARCHAR(100) NOT NULL,
-    password VARCHAR(255) NOT NULL
+    password VARCHAR(255) NOT NULL,
+    status ENUM('Active', 'Disabled') NOT NULL
 );
 ALTER TABLE Staff AUTO_INCREMENT = 1;
 
@@ -24,20 +26,20 @@ CREATE TABLE IF NOT EXISTS Member (
     fName VARCHAR(50) NOT NULL,
     lName VARCHAR(50) NOT NULL,
     email VARCHAR(100) NOT NULL,
-    password VARCHAR(255) NOT NULL
+    password VARCHAR(255) NOT NULL,
+    status ENUM('Active', 'Disabled') NOT NULL
 );
 ALTER TABLE Member AUTO_INCREMENT = 1;
 
 CREATE TABLE IF NOT EXISTS Book (
     isbn VARCHAR(13) PRIMARY KEY,
     title VARCHAR(100) NOT NULL,
-    author VARCHAR(100) NOT NULL,
-    publisher VARCHAR(100) NOT NULL,
-    availability ENUM('Available', 'On Loan') NOT NULL,
+    author VARCHAR(100),
+    publisher VARCHAR(100),
+    availability ENUM('Available', 'On Loan', 'Deleted') NOT NULL,
     shelf VARCHAR(1) NOT NULL
 );
-ALTER TABLE Book MODIFY COLUMN publisher VARCHAR(100);
-ALTER TABLE Book MODIFY COLUMN author VARCHAR(100);
+
 
 
 CREATE TABLE IF NOT EXISTS `Order` (

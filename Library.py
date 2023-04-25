@@ -23,12 +23,13 @@ class ViewOrder:
 
 
 class PersonInfo:
-    def __init__(self, ID, fName, lName, email, password):
+    def __init__(self, ID, fName, lName, email, password, status):
         self.ID = ID
         self.fName = fName
         self.lName = lName
         self.email = email
         self.password = password
+        self.status = status
 
 
 class Book:
@@ -163,7 +164,7 @@ def check_login(email, password):  # RETURN True or False
     # Check if the result is not None (i.e., the email and password combination exists)
     if result is not None:
         person = PersonInfo(result[0], result[1],
-                            result[2], result[3], result[4])
+                            result[2], result[3], result[4], result[5])
         return True
     else:
         return False
@@ -198,7 +199,18 @@ def login_UI():  # return
 # Search_book Menu
 ###################################################################################################
 def search_book_by_title(bookTitle):
-    results = search_using_keywords_MySQL(bookTitle, "title", "book")
+    # Extract keywords
+    keywords = bookTitle.split(" ")
+    # Build SQL to search
+    sql = f"SELECT * FROM Book WHERE availability <> 'Deleted' and ("
+    for i in range(len(keywords)):
+        if i == 0:
+            sql += f"title LIKE '%" + keywords[i] + "%'"
+        else:
+            sql += f" OR title LIKE '%" + keywords[i] + "%'"
+    sql += ");"
+    dbcursor.execute(sql)
+    results = dbcursor.fetchall()
     if len(results) > 0:
         for book in results:
             print(book)
@@ -207,8 +219,10 @@ def search_book_by_title(bookTitle):
 
 
 def search_book_by_isbn(isbn):
-    # Fetch the result of the query
-    results = search_using_keywords_MySQL(isbn, "isbn", "Book")
+    # Build SQL to search
+    sql = f"SELECT * FROM Book WHERE availability <> 'Deleted' and (isbn LIKE '%{isbn}%');"
+    dbcursor.execute(sql)
+    results = dbcursor.fetchall()
     if len(results) > 0:
         for book in results:
             print(book)
@@ -461,6 +475,8 @@ def edit_personal_information():
 
 ###################################################################################################
 
+###
+
 
 def display_manage_book_menu():
     os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
@@ -482,7 +498,14 @@ Shelf: {book.shelf}""")
 
 
 def insert_new_book_SQL(newBook=Book()):
-    sql = f"""INSERT INTO Book (isbn, title, author, publisher, availability, shelf) VALUES ('{newBook.isbn}', '{newBook.title}', '{newBook.author}', '{ newBook.publisher}', '{newBook.availability}', '{newBook.shelf}') """
+    sql = f"""INSERT INTO Book (isbn, title, author, publisher, availability, shelf) 
+VALUES ('{newBook.isbn}', '{newBook.title}', '{newBook.author}', '{ newBook.publisher}', '{newBook.availability}', '{newBook.shelf}') 
+ON DUPLICATE KEY UPDATE 
+    title = VALUES(title), 
+    author = VALUES(author), 
+    publisher = VALUES(publisher), 
+    availability = VALUES(availability), 
+    shelf = VALUES(shelf);"""
     dbcursor.execute(sql)
     db.commit()
 
@@ -557,6 +580,16 @@ def insert_new_book():
                 "Please Enter 'Y'(Yes) to Confirm or 'N'(NO) Cancel: ")
 
 
+def display_update_book_menu():
+    print("""Update Book Menu
+    """)
+
+
+def update_book():
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    display_update_book_menu()
+
+
 def display_delete_book_menu():
     os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
     print("Delet Book Menu")
@@ -566,26 +599,24 @@ def display_delete_book_menu():
     print("(Enter '-1' to BACK)")
 
 
-def delete_MySQL(input, attribute, table):
-    sql = f"DELETE FROM {table} WHERE {attribute} = '{input}';"
-    dbcursor.execute(sql)
-    db.commit()
-
-
-def delete_book_by_isbn():
+def search_book_by_isbn_to_delete():
     while True:
         os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
         print("(Enter '-1' to BACK)")
+        # Input isbn
+        isbn = input("Search book isbn: ")
+        if isbn == "-1" and len(isbn) == 2:
+            break
+        search_book_by_isbn(isbn)
+        print("Press ENTER if you want to search again")
         isbn = input("ENTER isbn of Book you want to DELETE: ")
         isExist = bool(False)
         isExist = (check_duplicate_isbn_SQL(isbn))
         if ("0000000000000" <= isbn <= "9999999999999" and len(isbn) == 13 and isExist) or (isbn == "-1" and len(isbn) == 2):
             break
         else:
-            if not isExist:
-                print("The ISBN is NOT EXIST")
-            else:
-                print("!!!You Have Enter INVALID Value!!!")
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            print("The ISBN NOT EXIST Or IS INVALID")
             input("(Press ENTER to RE-ENTER)")
     if (isbn == "-1" and len(isbn) == 2):
         return
@@ -607,14 +638,16 @@ def delete_book_by_isbn():
     display_book_info(book)
     choice = input(
         "Please Enter 'Y'(Yes) to Confirm or 'N'(NO) Cancel: ")
+    choice = choice.upper()
     while True:
-        if choice == "Y" or "y" and len(choice) == 1:
+        if (choice == "Y") and (len(choice) == 1):
             os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
-            delete_MySQL(isbn, "isbn", "book")
+            update_one_attribute_SQL(
+                "Deleted", "availability", "book", "isbn", isbn)
             print("Delete Book Successful")
             input("(Press Enter to continue)")
             break
-        if choice == "N" or "n" and len(choice) == 1:
+        if (choice == "N") and (len(choice) == 1):
             break
         else:
             os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
@@ -623,6 +656,120 @@ def delete_book_by_isbn():
             print("!!!You Have Enter INVALID Value!!!")
             choice = input(
                 "Please Enter 'Y'(Yes) to Confirm or 'N'(NO) Cancel: ")
+
+
+def search_book_by_title_to_delete():
+    isbn = "-1"
+    while True:
+        os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+        print("(Enter '-1' to BACK)")
+        # Input bookTitle
+        bookTitle = input("Search book title: ")
+        if bookTitle == "-1" and len(bookTitle) == 2:
+            break
+        search_book_by_title(bookTitle)
+        print("Press ENTER if you want to search again")
+
+        isbn = input("ENTER isbn of Book you want to DELETE: ")
+        isExist = bool(False)
+        isExist = (check_duplicate_isbn_SQL(isbn))
+        if ("0000000000000" <= isbn <= "9999999999999" and len(isbn) == 13 and isExist) or (isbn == "-1" and len(isbn) == 2):
+            break
+        else:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            print("The ISBN NOT EXIST Or IS INVALID")
+            input("(Press ENTER to RE-ENTER)")
+    if (isbn == "-1" and len(isbn) == 2) or (bookTitle == "-1" and len(bookTitle) == 2):
+        return
+    result = search_using_exact_keywords_MySQL(isbn, "isbn", "Book")
+    book = Book()
+    book.isbn = result[0]
+    book.title = result[1]
+    book.author = result[2]
+    book.publisher = result[3]
+    book.availability = result[4]
+    book.shelf = result[5]
+    if book.availability == "On Loan":
+        print("Book is currently On Loan")
+        print("CANNOT DELETE")
+        input("(Press ENTER to Back)")
+        return
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("Delete Book Information")
+    display_book_info(book)
+    choice = input(
+        "Please Enter 'Y'(Yes) to Confirm or 'N'(No) to Cancel: ")
+    choice = choice.upper()
+    while True:
+        if (choice == "Y") and (len(choice) == 1):
+            input(choice)
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            update_one_attribute_SQL(
+                "Deleted", "availability", "book", "isbn", isbn)
+            print("Delete Book Successful")
+            input("(Press Enter to continue)")
+            break
+        if (choice == "N") and (len(choice) == 1):
+            break
+        else:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            print("Delete Book Information")
+            display_book_info(book)
+            print("!!!You Have Enter INVALID Value!!!")
+            choice = input(
+                "Please Enter 'Y'(Yes) to Confirm or 'N'(No) Cancel: ")
+
+
+def delete_book_by_isbn():
+    while True:
+        os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+        print("(Enter '-1' to BACK)")
+        isbn = input("ENTER isbn of Book you want to DELETE: ")
+        isExist = bool(False)
+        isExist = (check_duplicate_isbn_SQL(isbn))
+        if ("0000000000000" <= isbn <= "9999999999999" and len(isbn) == 13 and isExist) or (isbn == "-1" and len(isbn) == 2):
+            break
+        else:
+            print("The ISBN NOT EXIST or IS INVALID")
+            input("(Press ENTER to RE-ENTER)")
+    if (isbn == "-1" and len(isbn) == 2):
+        return
+    result = search_using_exact_keywords_MySQL(isbn, "isbn", "Book")
+    book = Book()
+    book.isbn = result[0]
+    book.title = result[1]
+    book.author = result[2]
+    book.publisher = result[3]
+    book.availability = result[4]
+    book.shelf = result[5]
+    if book.availability == "On Loan":
+        print("Book is currently On Loan")
+        print("CANNOT DELETE")
+        input("(Press ENTER to Back)")
+        return
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("Delete Book Information")
+    display_book_info(book)
+    choice = input(
+        "Please Enter 'Y'(Yes) to Confirm or 'N'(No) Cancel: ")
+    choice = choice.upper()
+    while True:
+        if choice == "Y" and len(choice) == 1:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            update_one_attribute_SQL(
+                "Deleted", "availability", "book", "isbn", isbn)
+            print("Delete Book Successful")
+            input("(Press Enter to continue)")
+            break
+        if choice == "N" and len(choice) == 1:
+            break
+        else:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            print("Delete Book Information")
+            display_book_info(book)
+            print("!!!You Have Enter INVALID Value!!!")
+            choice = input(
+                "Please Enter 'Y'(Yes) to Confirm or 'N'(No) Cancel: ")
 
 
 def delete_book():
@@ -634,20 +781,10 @@ def delete_book():
                 if choice == "-1":
                     break
                 if choice == "1":
-                    # CLEAR SCREEN
-                    os.system("cls" if os.name == "nt" else "clear")
-                    # Input bookTitle
-                    bookTitle = input("Search book title: ")
-                    search_book_by_title(bookTitle)
-                    input("Press ENTER to back to Search MENU")
+                    search_book_by_title_to_delete()
                     break
                 if choice == "2":
-                    # CLEAR SCREEN
-                    os.system("cls" if os.name == "nt" else "clear")
-                    # Input ISBN
-                    isbn = input("Search book ISBN: ")
-                    search_book_by_isbn(isbn)
-                    input("Press ENTER to back to Search MENU")
+                    search_book_by_isbn_to_delete()
                     break
                 if choice == "3":
                     delete_book_by_isbn()
@@ -684,6 +821,7 @@ def manage_book():
             choice = input("ENTER your action: ")
 
     ###################################################################################################
+###
 
 
 def display_member_menu():
