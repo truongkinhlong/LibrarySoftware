@@ -1,11 +1,11 @@
 USE libraryDatabase;
 
-INSERT IGNORE INTO Admin (adminID, fName, lName, email, password)
+INSERT IGNORE INTO Admin (adminID, fName, lName, email, password, status)
 VALUES
 	('AD000', 'Test', 'Test', 'ADTest@Test.com', 'TestAD', 'Active'), 
 	('AD001', 'Kinh', 'Truong', 'truongkinhlong@gmail.com', 'BLrider301!', 'Active'); 
 
-INSERT IGNORE  INTO Staff (staffID, fName, lName, email, password)
+INSERT IGNORE  INTO Staff (staffID, fName, lName, email, password, status)
 VALUES
 	('ST000', 'Test', 'Test', '', '', 'Active'),
 	('ST001', 'Adrian', 'Nguyen', 'ANguyen@gmail.com', 'AdNg001', 'Active'),
@@ -13,7 +13,7 @@ VALUES
 	('ST003', 'Nathan', 'Nguyen', 'NNguyen@gmail.com', 'NaNg003', 'Active'),
 	('ST004', 'Cooper', 'Tran', 'CTran@gmail.com', 'CoTr004', 'Active'); 
     
-INSERT IGNORE  INTO Member (memberID, fName, lName, email, password)
+INSERT IGNORE  INTO Member (memberID, fName, lName, email, password, status)
 VALUES
 	('MB000', 'Test', 'Test', '', '', 'Active'),
     ('MB001', 'Alice', 'Jones', 'alice.jones@example.com', 'password1', 'Active'),
