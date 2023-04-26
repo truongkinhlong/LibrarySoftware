@@ -34,7 +34,7 @@ class PersonInfo:
 
 
 class Book:
-    def __int__(self, isbn="", title="", author="", publisher="", availability="", shelf=""):
+    def __init__(self, isbn, title, author, publisher, availability, shelf):
         self.isbn = isbn
         self.title = title
         self.author = author
@@ -42,13 +42,46 @@ class Book:
         self.availability = availability
         self.shelf = shelf
 
+
+class Order:
+    def _init_(self, orderID, staffID, memberID, isbn, rentDate, dueDate, status, returnDate):
+        self.orderID = orderID
+        self.staffID = staffID
+        self.memberID = memberID
+        self.isbn = isbn
+        self.rentDate = rentDate
+        self.dueDate = dueDate
+        self.status = status
+        self.returDate = returnDate
+
 ################################################################
 # Function
 ################################################################
 # Database Function
 
 
-# return dbcursor.fetchall()
+def connect_to_database():  # Return VOID
+    global db
+    db = mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="3020",
+        database="librarydatabase"
+    )
+
+    # Create a cursor object to execute SQL queries
+    global dbcursor
+    dbcursor = db.cursor()
+
+
+def fetchone_from_MySQL(sql):
+    # Execute the SQL
+    dbcursor.execute(sql)
+
+    # Return Fetchall result from SQL
+    return dbcursor.fetchone()
+
+
 def search_using_keywords_MySQL(inputString, attribute, table):
     # Extract keywords
     keywords = inputString.split(" ")
@@ -97,19 +130,6 @@ def search_using_keywords_MySQL_selective_attribute(inputString, attribute, tabl
     # Return Fetchall result from SQL
     return dbcursor.fetchall()
 
-
-def connect_to_database():  # Return VOID
-    global db
-    db = mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="3020",
-        database="librarydatabase"
-    )
-
-    # Create a cursor object to execute SQL queries
-    global dbcursor
-    dbcursor = db.cursor()
 
 # Login Section
 ################################################################
@@ -318,7 +338,6 @@ FROM
     result = (dbcursor.fetchone())
     order = ViewOrder(result[0], result[1], result[2], result[3], result[4], result[5], result[6],
                       result[7], result[8], result[9], result[10], result[11], result[12], result[13])
-    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
     print(f"""OrderID: {order.orderID} Status: {order.status}
 StaffID: {order.staffID}  Name: {order.staffFName} {order.staffLName}
 MemberID: {order.memberID} Name: {order.memberFName} {order.memberLName}
@@ -327,7 +346,6 @@ Book Title: {order.bookTitle}
 Book Author: {order.bookAuthor}
 Rent Date: {order.rentDate}       Due Date: {order.dueDate}
 Return Date: {order.returnDate}""")
-    input("(Press ENTER to return)")
 
 
 def view_your_order():
@@ -343,7 +361,10 @@ def view_your_order():
                 if choice == "-1":
                     break
                 else:
+                    # CLEAR SCREEN
+                    os.system("cls" if os.name == "nt" else "clear")
                     view_order_detail(choice)
+                    input("(Press ENTER to return)")
                     break
             else:
                 # CLEAR SCREEN
@@ -500,7 +521,7 @@ Publisher: {book.publisher}
 Shelf: {book.shelf}""")
 
 
-def insert_new_book_SQL(newBook=Book()):
+def insert_new_book_SQL(newBook):
     sql = f"""INSERT INTO Book (isbn, title, author, publisher, availability, shelf)
 VALUES ('{newBook.isbn}', '{newBook.title}', '{newBook.author}',
         '{ newBook.publisher}', '{newBook.availability}', '{newBook.shelf}')
@@ -523,7 +544,7 @@ def check_duplicate_isbn_SQL(isbn):
 
 
 def insert_new_book():
-    newBook = Book()
+    newBook = Book("", "", "", "", "", "")
     os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
     print("Please Insert New Book Information")
     print("(ISBN, Title, Author, Publisher, Shelf)")
@@ -596,7 +617,7 @@ def display_edit_book_menu():
     print("(Enter '-1' to BACK)")
 
 
-def update_book_to_MySQL(book=Book()):
+def update_book_to_MySQL(book):
     update_one_attribute_SQL(
         book.title, "title", "book", "isbn", book.isbn)
     update_one_attribute_SQL(
@@ -628,13 +649,8 @@ def search_book_by_isbn_to_edit():
     if (isbn == "-1" and len(isbn) == 2):
         return
     result = search_using_exact_keywords_MySQL(isbn, "isbn", "Book")
-    book = Book()
-    book.isbn = result[0]
-    book.title = result[1]
-    book.author = result[2]
-    book.publisher = result[3]
-    book.availability = result[4]
-    book.shelf = result[5]
+    book = Book(result[0], result[1], result[2],
+                result[3], result[4], result[5])
     os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
     print("Book Information")
     display_book_info(book)
@@ -709,13 +725,8 @@ def search_book_by_title_to_edit():
     if (isbn == "-1" and len(isbn) == 2):
         return
     result = search_using_exact_keywords_MySQL(isbn, "isbn", "Book")
-    book = Book()
-    book.isbn = result[0]
-    book.title = result[1]
-    book.author = result[2]
-    book.publisher = result[3]
-    book.availability = result[4]
-    book.shelf = result[5]
+    book = Book(result[0], result[1], result[2],
+                result[3], result[4], result[5])
     os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
     print("Book Information")
     display_book_info(book)
@@ -784,13 +795,8 @@ def edit_book_by_isbn():
     if (isbn == "-1" and len(isbn) == 2):
         return
     result = search_using_exact_keywords_MySQL(isbn, "isbn", "Book")
-    book = Book()
-    book.isbn = result[0]
-    book.title = result[1]
-    book.author = result[2]
-    book.publisher = result[3]
-    book.availability = result[4]
-    book.shelf = result[5]
+    book = Book(result[0], result[1], result[2],
+                result[3], result[4], result[5])
 
     os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
     print("Book Information")
@@ -901,13 +907,8 @@ def search_book_by_isbn_to_delete():
     if (isbn == "-1" and len(isbn) == 2):
         return
     result = search_using_exact_keywords_MySQL(isbn, "isbn", "Book")
-    book = Book()
-    book.isbn = result[0]
-    book.title = result[1]
-    book.author = result[2]
-    book.publisher = result[3]
-    book.availability = result[4]
-    book.shelf = result[5]
+    book = Book(result[0], result[1], result[2],
+                result[3], result[4], result[5])
     if book.availability == "On Loan":
         print("Book is currently On Loan")
         print("CANNOT DELETE")
@@ -962,13 +963,9 @@ def search_book_by_title_to_delete():
     if (isbn == "-1" and len(isbn) == 2) or (bookTitle == "-1" and len(bookTitle) == 2):
         return
     result = search_using_exact_keywords_MySQL(isbn, "isbn", "Book")
-    book = Book()
-    book.isbn = result[0]
-    book.title = result[1]
-    book.author = result[2]
-    book.publisher = result[3]
-    book.availability = result[4]
-    book.shelf = result[5]
+    book = Book(result[0], result[1], result[2],
+                result[3], result[4], result[5])
+
     if book.availability == "On Loan":
         print("Book is currently On Loan")
         print("CANNOT DELETE")
@@ -1085,16 +1082,12 @@ def manage_book():
             break
         if choice == "1" and len(choice) == 1:
             search_book()
-            break
         if choice == "2" and len(choice) == 1:
             insert_new_book()
-            break
         if choice == "3" and len(choice) == 1:
             edit_book()
-            break
         if choice == "4" and len(choice) == 1:
             delete_book()
-            break
         else:
             display_manage_book_menu()
             print("!!!You Have Enter INVALID Value!!!")
@@ -1151,7 +1144,10 @@ def search_order_by_isbn():
             if choice == "-1":
                 break
             else:
+                # CLEAR SCREEN
+                os.system("cls" if os.name == "nt" else "clear")
                 view_order_detail(choice)
+                input("(Press ENTER to return)")
                 break
         else:
             os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
@@ -1176,7 +1172,10 @@ def search_order_by_memberID():
             if choice == "-1":
                 break
             else:
+                # CLEAR SCREEN
+                os.system("cls" if os.name == "nt" else "clear")
                 view_order_detail(choice)
+                input("(Press ENTER to return)")
                 break
         else:
             os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
@@ -1205,7 +1204,115 @@ def search_order():
             break
 
 
-def recieve_returned_book():
+def display_edit_order_menu():
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("""Edit Order Menu:
+1. Search Order by ID to EDIT
+2. Search Order by staffID to EDIT
+3. EDIT Order by ID
+(Enter '-1' to BACK)""")
+
+
+def check_duplicate_orderID_SQL(orderID):
+    result = search_using_exact_keywords_MySQL(orderID, "orderID", "`Order`")
+    if result is not None:
+        return True
+    else:
+        return False
+
+
+def update_order_to_MySQL(memberID, isbn, orderID):
+    update_one_attribute_SQL(
+        memberID, "memberID", "`Order`", "orderID", orderID)
+    update_one_attribute_SQL(
+        isbn, "isbn", "`Order`", "orderID", orderID)
+
+
+def create_new_order():
+    while True:
+        os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+
+
+def edit_order():
+    while True:
+        os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+        print("(Enter '-1' to BACK)")
+        orderID = input("ENTER OrderID you want to EDIT: ")
+        if ("000000" <= orderID <= "999999" and len(orderID) == 6 and check_duplicate_orderID_SQL(orderID)) or (orderID == "-1" and len(orderID) == 2):
+            break
+        else:
+            print("The OrderID NOT EXIST or IS INVALID")
+            input("(Press ENTER to RE-ENTER)")
+    if (orderID == "-1" and len(orderID) == 2):
+        return
+
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("Order Information")
+    view_order_detail(orderID)
+    sql = f"SELECT memberID FROM `Order` WHERE orderID = '{orderID}'"
+    result = fetchone_from_MySQL(sql)
+    currMemberID = result[0]
+    sql = f"SELECT isbn FROM `Order` WHERE orderID = '{orderID}'"
+    result = fetchone_from_MySQL(sql)
+    currIsbn = result[0]
+    input("(Press ENTER to continue)")
+
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("(Leave BLANK if you to keep the same data)")
+    memberID = input("ENTER New MemberID: ")
+    while True:
+        if ("MB000" <= memberID <= "MB999" and len(memberID) == 5) or (len(memberID) == 0):
+            break
+        else:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            print("!!!You Have Enter INVALID Value!!!")
+            print("(Leave BLANK if you to keep the same data)")
+            memberID = input("ENTER New Book MemberID: ")
+    if len(memberID) != 0:
+        update_one_attribute_SQL(memberID, "memberID",
+                                 "`Order`", "orderID", orderID)
+
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("(Leave BLANK if you to keep the same data)")
+    isbn = input("ENTER New Book ISBN: ")
+    while True:
+        if ("0000000000000" <= isbn <= "9999999999999" and len(isbn) == 13 and check_duplicate_isbn_SQL(isbn)) or (len(isbn) == 0):
+            break
+        else:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            print("ISBN NOT EXIST or IS INVALID")
+            print("(Leave BLANK if you to keep the same data)")
+            isbn = input("ENTER New Book ISBN: ")
+    if not len(isbn) == 0:
+        update_one_attribute_SQL(
+            isbn, "isbn", "`Order`", "orderID", orderID)
+
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("Update Order Information")
+    view_order_detail(orderID)
+    choice = input(
+        "Please Enter 'Y'(Yes) to Confirm or 'N'(No) Cancel: ")
+    while True:
+        choice = choice.upper()
+        if choice == "Y" and len(choice) == 1:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            print("Update Book Successful")
+            input("(Press Enter to continue)")
+            break
+        if choice == "N" and len(choice) == 1:
+            update_order_to_MySQL(
+                currMemberID, currIsbn, orderID)
+            break
+        else:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            print("Update Book Information")
+            view_order_detail(orderID)
+            print("!!!You Have Enter INVALID Value!!!")
+            choice = input(
+                "Please Enter 'Y'(Yes) to Confirm or 'N'(No) Cancel: ")
+
+
+def recieve_returning_book():
     os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
     print("Receive Returning Book")
     print("(Enter '-1' to BACK)")
@@ -1277,7 +1384,7 @@ def manage_order():
                 edit_order()
                 break
             if choice == "4" and len(choice) == 1:
-                recieve_returned_book()
+                recieve_returning_book()
                 break
             else:
                 display_manage_order_menu()
