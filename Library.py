@@ -1339,6 +1339,8 @@ def create_new_order():
 VALUES ('{newOrder.orderID}', '{newOrder.staffID}', '{newOrder.memberID}', '{newOrder.isbn}', '{newOrder.rentDate}', '{newOrder.dueDate}', '{newOrder.status}')
             """
             update_to_MySQL(sql)
+            update_one_attribute_SQL(
+                "On Loan", "avalability", "book", "isbn", newOrder.isbn)
             print("Create Order Successful")
             input("(Press Enter to continue)")
             break
