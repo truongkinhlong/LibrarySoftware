@@ -1,5 +1,6 @@
 import os
 import mysql.connector
+import datetime
 
 # classes
 
@@ -269,25 +270,21 @@ def search_book():
                 choice = input("ENTER your action: ")
         if choice == "-1":
             break
-###################################################################################################
+###
 
 
 # view_your_Order Menu
-###################################################################################################
-def display_view_order_menu():
-    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
-
+###
+def display_view_order_menu_by_member(memberID):
     results = search_using_keywords_MySQL_selective_attribute(
-        person.ID, "memberID", "`order`", "orderID, isbn, status")
+        memberID, "memberID", "`order`", "orderID, isbn, status")
+    print("|OrderID ||     ISBN      ||  Status  |")
     if len(results) > 0:
         for order in results:
             print(order)
 
     else:
         print("No orders found")
-
-    print("Enter orderID to view detail")
-    print("(Enter '-1' to LOG OUT)")
 
 
 def view_order_detail(orderID):
@@ -335,8 +332,10 @@ Return Date: {order.returnDate}""")
 
 def view_your_order():
     while True:
-        display_view_order_menu()
-
+        os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+        display_view_order_menu_by_member(person.ID)
+        print("Enter orderID to view detail")
+        print("(Enter '-1' to LOG OUT)")
         # Make Choice
         choice = input("ENTER orderID: ")
         while (True):
@@ -348,16 +347,19 @@ def view_your_order():
                     break
             else:
                 # CLEAR SCREEN
-                display_view_order_menu()
+                os.system("cls" if os.name == "nt" else "clear")
+                display_view_order_menu_by_member(person.ID)
+                print("Enter orderID to view detail")
+                print("(Enter '-1' to LOG OUT)")
                 print("!!!You Have Enter INVALID Value!!!")
                 choice = input("ENTER OrderID: ")
         if choice == "-1":
             break
 
 
-###################################################################################################
+###
 # edit_personal_information menu()
-###################################################################################################
+###
 def display_edit_personal_information_menu():
     os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
     print(f"""ID: {person.ID}
@@ -473,9 +475,10 @@ def edit_personal_information():
         if choice == "-1":
             break
 
-###################################################################################################
+###
 
 ###
+# Display Manage Book Menu
 
 
 def display_manage_book_menu():
@@ -483,13 +486,13 @@ def display_manage_book_menu():
     print("""Manage Book Menu
 1. Search Book
 2. Insert New Book
-3. Update Book
+3. Edit Book
 4. Delete Book
 (ENTER '-1' to Back)""")
 
 
 def display_book_info(book):
-    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+
     print(f"""ISBN: {book.isbn}
 Title: {book.title}
 Author: {book.author}
@@ -498,13 +501,14 @@ Shelf: {book.shelf}""")
 
 
 def insert_new_book_SQL(newBook=Book()):
-    sql = f"""INSERT INTO Book (isbn, title, author, publisher, availability, shelf) 
-VALUES ('{newBook.isbn}', '{newBook.title}', '{newBook.author}', '{ newBook.publisher}', '{newBook.availability}', '{newBook.shelf}') 
-ON DUPLICATE KEY UPDATE 
-    title = VALUES(title), 
-    author = VALUES(author), 
-    publisher = VALUES(publisher), 
-    availability = VALUES(availability), 
+    sql = f"""INSERT INTO Book (isbn, title, author, publisher, availability, shelf)
+VALUES ('{newBook.isbn}', '{newBook.title}', '{newBook.author}',
+        '{ newBook.publisher}', '{newBook.availability}', '{newBook.shelf}')
+ON DUPLICATE KEY UPDATE
+    title = VALUES(title),
+    author = VALUES(author),
+    publisher = VALUES(publisher),
+    availability = VALUES(availability),
     shelf = VALUES(shelf);"""
     dbcursor.execute(sql)
     db.commit()
@@ -563,6 +567,7 @@ def insert_new_book():
         else:
             print("!!!You Have Enter INVALID Value!!!")
             input("(Press ENTER to RE-ENTER)")
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
     print("New Book Information")
     display_book_info(newBook)
     choice = input(
@@ -574,20 +579,295 @@ def insert_new_book():
         if choice == "N" or "n" and len(choice) == 1:
             break
         else:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            print("New Book Information")
             display_book_info(newBook)
             print("!!!You Have Enter INVALID Value!!!")
             choice = input(
                 "Please Enter 'Y'(Yes) to Confirm or 'N'(NO) Cancel: ")
 
 
-def display_update_book_menu():
-    print("""Update Book Menu
-    """)
-
-
-def update_book():
+def display_edit_book_menu():
     os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
-    display_update_book_menu()
+    print("Edit Book Menu")
+    print("1. Search Book by Title to EDIT")
+    print("2. Search Book by ISBN to EDIT")
+    print("3. Enter book ISBN to EDIT")
+    print("(Enter '-1' to BACK)")
+
+
+def update_book_to_MySQL(book=Book()):
+    update_one_attribute_SQL(
+        book.title, "title", "book", "isbn", book.isbn)
+    update_one_attribute_SQL(
+        book.author, "author", "book", "isbn", book.isbn)
+    update_one_attribute_SQL(
+        book.publisher, "publisher", "book", "isbn", book.isbn)
+    update_one_attribute_SQL(
+        book.shelf, "shelf", "book", "isbn", book.isbn)
+
+
+def search_book_by_isbn_to_edit():
+    while True:
+        os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+        print("(Enter '-1' to BACK)")
+        # Input isbn
+        isbn = input("Search book isbn: ")
+        if isbn == "-1" and len(isbn) == 2:
+            break
+        search_book_by_isbn(isbn)
+        print("Press ENTER if you want to search again")
+        isbn = input("ENTER ISBN of Book you want to EDIT: ")
+        isExist = bool(False)
+        isExist = (check_duplicate_isbn_SQL(isbn))
+        if ("0000000000000" <= isbn <= "9999999999999" and len(isbn) == 13 and isExist) or (isbn == "-1" and len(isbn) == 2):
+            break
+        else:
+            print("The ISBN NOT EXIST or IS INVALID")
+            input("(Press ENTER to RE-ENTER)")
+    if (isbn == "-1" and len(isbn) == 2):
+        return
+    result = search_using_exact_keywords_MySQL(isbn, "isbn", "Book")
+    book = Book()
+    book.isbn = result[0]
+    book.title = result[1]
+    book.author = result[2]
+    book.publisher = result[3]
+    book.availability = result[4]
+    book.shelf = result[5]
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("Book Information")
+    display_book_info(book)
+    input("(Press ENTER to continue)")
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("(Leave BLANK if you to keep the same data)")
+    newTitle = input("ENTER New Title: ")
+    if not len(newTitle) == 0:
+        book.title = newTitle
+    newAuthor = input("ENTER New Author: ")
+    if not len(newAuthor) == 0:
+        book.author = newAuthor
+    newPublisher = input("ENTER New Publisher: ")
+    if not len(newPublisher) == 0:
+        book.publisher = newPublisher
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("Please Choose Shelf from A to Z")
+    newShelf = input("ENTER New Shelf: ")
+    while True:
+        newShelf = newShelf.upper()
+        if ("A" <= newShelf <= "Z" and len(newShelf) == 1) or (len(newShelf) == 0):
+            break
+        else:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            print("Please Choose Shelf from A to Z")
+            print("!!!You Have Enter INVALID Value!!!")
+            newShelf = input("ENTER New Shelf: ")
+    if not len(newShelf) == 0:
+        book.shelf = newShelf
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("Update Book Information")
+    display_book_info(book)
+    choice = input(
+        "Please Enter 'Y'(Yes) to Confirm or 'N'(No) Cancel: ")
+    while True:
+        choice = choice.upper()
+        if choice == "Y" and len(choice) == 1:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            update_book_to_MySQL(book)
+            print("Update Book Successful")
+            input("(Press Enter to continue)")
+            break
+        if choice == "N" and len(choice) == 1:
+            break
+        else:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            print("Update Book Information")
+            display_book_info(book)
+            print("!!!You Have Enter INVALID Value!!!")
+            choice = input(
+                "Please Enter 'Y'(Yes) to Confirm or 'N'(No) Cancel: ")
+
+
+def search_book_by_title_to_edit():
+    while True:
+        os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+        print("(Enter '-1' to BACK)")
+        # Input isbn
+        title = input("Search book title: ")
+        if title == "-1" and len(title) == 2:
+            break
+        search_book_by_title(title)
+        print("Press ENTER if you want to search again")
+        isbn = input("ENTER ISBN of Book you want to EDIT: ")
+        isExist = bool(False)
+        isExist = (check_duplicate_isbn_SQL(isbn))
+        if ("0000000000000" <= isbn <= "9999999999999" and len(isbn) == 13 and isExist) or (isbn == "-1" and len(isbn) == 2):
+            break
+        else:
+            print("The ISBN NOT EXIST or IS INVALID")
+            input("(Press ENTER to RE-ENTER)")
+    if (isbn == "-1" and len(isbn) == 2):
+        return
+    result = search_using_exact_keywords_MySQL(isbn, "isbn", "Book")
+    book = Book()
+    book.isbn = result[0]
+    book.title = result[1]
+    book.author = result[2]
+    book.publisher = result[3]
+    book.availability = result[4]
+    book.shelf = result[5]
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("Book Information")
+    display_book_info(book)
+    input("(Press ENTER to continue)")
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("(Leave BLANK if you to keep the same data)")
+    newTitle = input("ENTER New Title: ")
+    if not len(newTitle) == 0:
+        book.title = newTitle
+    newAuthor = input("ENTER New Author: ")
+    if not len(newAuthor) == 0:
+        book.author = newAuthor
+    newPublisher = input("ENTER New Publisher: ")
+    if not len(newPublisher) == 0:
+        book.publisher = newPublisher
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("Please Choose Shelf from A to Z")
+    newShelf = input("ENTER New Shelf: ")
+    while True:
+        newShelf = newShelf.upper()
+        if ("A" <= newShelf <= "Z" and len(newShelf) == 1) or (len(newShelf) == 0):
+            break
+        else:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            print("Please Choose Shelf from A to Z")
+            print("!!!You Have Enter INVALID Value!!!")
+            newShelf = input("ENTER New Shelf: ")
+    if not len(newShelf) == 0:
+        book.shelf = newShelf
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("Update Book Information")
+    display_book_info(book)
+    choice = input(
+        "Please Enter 'Y'(Yes) to Confirm or 'N'(No) Cancel: ")
+    while True:
+        choice = choice.upper()
+        if choice == "Y" and len(choice) == 1:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            update_book_to_MySQL(book)
+            print("Update Book Successful")
+            input("(Press Enter to continue)")
+            break
+        if choice == "N" and len(choice) == 1:
+            break
+        else:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            print("Update Book Information")
+            display_book_info(book)
+            print("!!!You Have Enter INVALID Value!!!")
+            choice = input(
+                "Please Enter 'Y'(Yes) to Confirm or 'N'(No) Cancel: ")
+
+
+def edit_book_by_isbn():
+    while True:
+        os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+        print("(Enter '-1' to BACK)")
+        isbn = input("ENTER ISBN of Book you want to EDIT: ")
+        isExist = bool(False)
+        isExist = (check_duplicate_isbn_SQL(isbn))
+        if ("0000000000000" <= isbn <= "9999999999999" and len(isbn) == 13 and isExist) or (isbn == "-1" and len(isbn) == 2):
+            break
+        else:
+            print("The ISBN NOT EXIST or IS INVALID")
+            input("(Press ENTER to RE-ENTER)")
+    if (isbn == "-1" and len(isbn) == 2):
+        return
+    result = search_using_exact_keywords_MySQL(isbn, "isbn", "Book")
+    book = Book()
+    book.isbn = result[0]
+    book.title = result[1]
+    book.author = result[2]
+    book.publisher = result[3]
+    book.availability = result[4]
+    book.shelf = result[5]
+
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("Book Information")
+    display_book_info(book)
+    input("(Press ENTER to continue)")
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("(Leave BLANK if you to keep the same data)")
+    newTitle = input("ENTER New Title: ")
+    if not len(newTitle) == 0:
+        book.title = newTitle
+    newAuthor = input("ENTER New Author: ")
+    if not len(newAuthor) == 0:
+        book.author = newAuthor
+    newPublisher = input("ENTER New Publisher: ")
+    if not len(newPublisher) == 0:
+        book.publisher = newPublisher
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("Please Choose Shelf from A to Z")
+    newShelf = input("ENTER New Shelf: ")
+    while True:
+        newShelf = newShelf.upper()
+        if ("A" <= newShelf <= "Z" and len(newShelf) == 1) or (len(newShelf) == 0):
+            break
+        else:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            print("Please Choose Shelf from A to Z")
+            print("!!!You Have Enter INVALID Value!!!")
+            newShelf = input("ENTER New Shelf: ")
+    if not len(newShelf) == 0:
+        book.shelf = newShelf
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("Update Book Information")
+    display_book_info(book)
+    choice = input(
+        "Please Enter 'Y'(Yes) to Confirm or 'N'(No) Cancel: ")
+    while True:
+        choice = choice.upper()
+        if choice == "Y" and len(choice) == 1:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            update_book_to_MySQL(book)
+            print("Update Book Successful")
+            input("(Press Enter to continue)")
+            break
+        if choice == "N" and len(choice) == 1:
+            break
+        else:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            print("Update Book Information")
+            display_book_info(book)
+            print("!!!You Have Enter INVALID Value!!!")
+            choice = input(
+                "Please Enter 'Y'(Yes) to Confirm or 'N'(No) Cancel: ")
+
+
+def edit_book():
+    while True:
+        display_edit_book_menu()
+        choice = input("ENTER your action: ")
+        while (True):
+            if ("1" <= choice <= "3" and len(choice) == 1) or choice == "-1":
+                if choice == "-1":
+                    break
+                if choice == "1":
+                    search_book_by_title_to_edit()
+                    break
+                if choice == "2":
+                    search_book_by_isbn_to_edit()
+                    break
+                if choice == "3":
+                    edit_book_by_isbn()
+                    break
+            else:
+                display_edit_book_menu()
+                print("!!!You Have Enter INVALID Value!!!")
+                choice = input("ENTER your action: ")
+        if choice == "-1":
+            break
 
 
 def display_delete_book_menu():
@@ -638,8 +918,8 @@ def search_book_by_isbn_to_delete():
     display_book_info(book)
     choice = input(
         "Please Enter 'Y'(Yes) to Confirm or 'N'(NO) Cancel: ")
-    choice = choice.upper()
     while True:
+        choice = choice.upper()
         if (choice == "Y") and (len(choice) == 1):
             os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
             update_one_attribute_SQL(
@@ -699,8 +979,8 @@ def search_book_by_title_to_delete():
     display_book_info(book)
     choice = input(
         "Please Enter 'Y'(Yes) to Confirm or 'N'(No) to Cancel: ")
-    choice = choice.upper()
     while True:
+        choice = choice.upper()
         if (choice == "Y") and (len(choice) == 1):
             input(choice)
             os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
@@ -752,8 +1032,8 @@ def delete_book_by_isbn():
     display_book_info(book)
     choice = input(
         "Please Enter 'Y'(Yes) to Confirm or 'N'(No) Cancel: ")
-    choice = choice.upper()
     while True:
+        choice = choice.upper()
         if choice == "Y" and len(choice) == 1:
             os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
             update_one_attribute_SQL(
@@ -809,9 +1089,9 @@ def manage_book():
         if choice == "2" and len(choice) == 1:
             insert_new_book()
             break
-        # if choice == "3" and len(choice) == 1:
-        #    update_book()
-        #    break
+        if choice == "3" and len(choice) == 1:
+            edit_book()
+            break
         if choice == "4" and len(choice) == 1:
             delete_book()
             break
@@ -820,7 +1100,191 @@ def manage_book():
             print("!!!You Have Enter INVALID Value!!!")
             choice = input("ENTER your action: ")
 
-    ###################################################################################################
+
+###
+###
+# Display Manage Order Menu
+def display_manage_order_menu():
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("""Manage Order Menu:
+1. Search Order
+2. Create New Order
+3. Edit Order
+4. Recieve Returning Book
+(Enter '-1' to BACK)""")
+
+
+def display_search_order_menu():
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("""Search Order Menu:
+1. Search Order by ISBN
+2. Search Order by MemberID
+(Enter '-1' to BACK)""")
+
+
+def display_view_order_menu_by_isbn(isbn):
+    results = search_using_keywords_MySQL_selective_attribute(
+        isbn, "isbn", "`order`", "orderID, isbn, status")
+    print("|OrderID ||     ISBN      ||  Status  |")
+    if len(results) > 0:
+        for order in results:
+            print(order)
+
+    else:
+        print("No orders found")
+
+
+def search_order_by_isbn():
+    while True:
+        os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+        print("Search Order by ISBN")
+        print("(Enter '-1' to BACK)")
+        isbn = input("ENTER ISBN: ")
+        if isbn == "-1" and len(isbn) == 2:
+            break
+        display_view_order_menu_by_isbn(isbn)
+        print("Press ENTER if you want to search again")
+        print("Enter orderID to view detail")
+        # Make Choice
+        choice = input("ENTER orderID: ")
+        if ("000000" <= choice <= "999999" and len(choice) == 6) or choice == "-1":
+            if choice == "-1":
+                break
+            else:
+                view_order_detail(choice)
+                break
+        else:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            print("!!!OrderID NOT EXIST or IS INVALID !!!")
+            input("(Press ENTER to RE-ENTER)")
+
+
+def search_order_by_memberID():
+    while True:
+        os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+        print("Search Order by MemberID")
+        print("(Enter '-1' to BACK)")
+        memberID = input("ENTER MemberID: ")
+        if memberID == "-1" and len(memberID) == 2:
+            break
+        display_view_order_menu_by_member(memberID)
+        print("Press ENTER if you want to search again")
+        print("Enter orderID to view detail")
+        # Make Choice
+        choice = input("ENTER orderID: ")
+        if ("000000" <= choice <= "999999" and len(choice) == 6) or choice == "-1":
+            if choice == "-1":
+                break
+            else:
+                view_order_detail(choice)
+                break
+        else:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            print("!!!OrderID NOT EXIST or IS INVALID !!!")
+            input("(Press ENTER to RE-ENTER)")
+
+
+def search_order():
+    while True:
+        display_search_order_menu()
+        choice = input("ENTER your action: ")
+        while True:
+            if choice == "-1" and len(choice) == 2:
+                break
+            if choice == "1" and len(choice) == 1:
+                search_order_by_isbn()
+                break
+            if choice == "2" and len(choice) == 1:
+                search_order_by_memberID()
+                break
+            else:
+                display_search_order_menu()
+                print("!!!You Have Enter INVALID Value!!!")
+                choice = input("ENTER your action: ")
+        if choice == "-1" and len(choice) == 2:
+            break
+
+
+def recieve_returned_book():
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("Receive Returning Book")
+    print("(Enter '-1' to BACK)")
+    isbn = input("ENTER ISBN of Returning Book: ")
+    while True:
+        if ("0000000000000" <= isbn <= "9999999999999" and len(isbn) == 13) or (isbn == "-1" and len(isbn) == 2):
+            break
+        else:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            print("Receive Returned Book")
+            print("The ISBN NOT EXIST or IS INVALID")
+            print("(Enter '-1' to BACK)")
+            isbn = input("ENTER ISBN of Returned Book: ")
+    if (isbn == "-1" and len(isbn) == 2):
+        return
+    result = search_using_exact_keywords_MySQL(isbn, "isbn", "Book")
+    book = Book()
+    book.isbn = result[0]
+    book.title = result[1]
+    book.author = result[2]
+    book.publisher = result[3]
+    book.availability = result[4]
+    book.shelf = result[5]
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("Returning Book Information")
+    display_book_info(book)
+    choice = input(
+        "Please Enter 'Y'(Yes) to Confirm or 'N'(No) Cancel: ")
+    while True:
+        choice = choice.upper()
+        if choice == "Y" and len(choice) == 1:
+            # CLEAR SCREEN
+            os.system("cls" if os.name == "nt" else "clear")
+            update_one_attribute_SQL(
+                "Available", "availability", "book", "isbn", isbn)
+            update_one_attribute_SQL(
+                "Returned", "status", "`order`", "isbn", isbn)
+            update_one_attribute_SQL(
+                datetime.datetime.now(), "returnDate", "`order`", "isbn", isbn)
+            print("Returning Book Successful")
+            input("(Press Enter to continue)")
+            break
+        if choice == "N" and len(choice) == 1:
+            break
+        else:
+            # CLEAR SCREEN
+            os.system("cls" if os.name == "nt" else "clear")
+            print("Returning Book Information")
+            display_book_info(book)
+            print("!!!You Have Enter INVALID Value!!!")
+            choice = input(
+                "Please Enter 'Y'(Yes) to Confirm or 'N'(No) Cancel: ")
+
+
+def manage_order():
+    while True:
+        display_manage_order_menu()
+        choice = input("ENTER your action: ")
+        while True:
+            if choice == "-1" and len(choice) == 2:
+                break
+            if choice == "1" and len(choice) == 1:
+                search_order()
+                break
+            if choice == "2" and len(choice) == 1:
+                create_new_order()
+                break
+            if choice == "3" and len(choice) == 1:
+                edit_order()
+                break
+            if choice == "4" and len(choice) == 1:
+                recieve_returned_book()
+                break
+            else:
+                display_manage_order_menu()
+                print("!!!You Have Enter INVALID Value!!!")
+                choice = input("ENTER your action: ")
+        if choice == "-1" and len(choice) == 2:
+            break
 ###
 
 
@@ -879,7 +1343,9 @@ def staff_UI():
             if choice == "1" and len(choice) == 1:
                 manage_book()
                 break
-
+            if choice == "2" and len(choice) == 1:
+                manage_order()
+                break
             if choice == "4" and len(choice) == 1:
                 edit_personal_information()
                 break
@@ -887,7 +1353,7 @@ def staff_UI():
                 display_staff_menu()
                 print("!!!You Have Enter INVALID Value!!!")
                 choice = input("ENTER your action: ")
-        if choice == "-1":
+        if choice == "-1" and len(choice) == 2:
             break
 
 
