@@ -1,6 +1,8 @@
 import os
 import mysql.connector
 import datetime
+from datetime import date, timedelta
+
 
 # classes
 
@@ -72,6 +74,12 @@ def connect_to_database():  # Return VOID
     # Create a cursor object to execute SQL queries
     global dbcursor
     dbcursor = db.cursor()
+
+
+def update_to_MySQL(sql):
+    # Execute the SQL
+    dbcursor.execute(sql)
+    db.commit()
 
 
 def fetchone_from_MySQL(sql):
@@ -1012,13 +1020,9 @@ def delete_book_by_isbn():
     if (isbn == "-1" and len(isbn) == 2):
         return
     result = search_using_exact_keywords_MySQL(isbn, "isbn", "Book")
-    book = Book()
-    book.isbn = result[0]
-    book.title = result[1]
-    book.author = result[2]
-    book.publisher = result[3]
-    book.availability = result[4]
-    book.shelf = result[5]
+    book = Book(result[0], result[1], result[2],
+                result[3], result[4], result[5])
+
     if book.availability == "On Loan":
         print("Book is currently On Loan")
         print("CANNOT DELETE")
@@ -1221,6 +1225,14 @@ def check_duplicate_orderID_SQL(orderID):
         return False
 
 
+def check_duplicate_SQL(value, attribute, table):
+    result = search_using_exact_keywords_MySQL(value, attribute, table)
+    if result is not None:
+        return True
+    else:
+        return False
+
+
 def update_order_to_MySQL(memberID, isbn, orderID):
     update_one_attribute_SQL(
         memberID, "memberID", "`Order`", "orderID", orderID)
@@ -1228,9 +1240,117 @@ def update_order_to_MySQL(memberID, isbn, orderID):
         isbn, "isbn", "`Order`", "orderID", orderID)
 
 
+def display_new_order_detail(newOrder):
+    sql = f"SELECT fName, lName FROM Staff WHERE staffID = '{newOrder.staffID}'"
+    result = fetchone_from_MySQL(sql)
+    staffFName = result[0]
+    staffLName = result[1]
+    sql = f"SELECT fName, lName FROM Member WHERE memberID = '{newOrder.memberID}'"
+    result = fetchone_from_MySQL(sql)
+    memberFName = result[0]
+    memberLName = result[1]
+    sql = f"SELECT title, author FROM Book WHERE isbn = '{newOrder.isbn}'"
+    result = fetchone_from_MySQL(sql)
+    bookTitle = result[0]
+    bookAuthor = result[1]
+
+    print(f"""OrderID: {newOrder.orderID}
+StaffID: {newOrder.staffID}  Name: {staffFName} {staffLName}
+MemberID: {newOrder.memberID} Name: {memberFName} {memberLName}
+Book ISBN: {newOrder.isbn}
+Book Title: {bookTitle}
+Book Author: {bookAuthor}
+Rent Date: {newOrder.rentDate}       Due Date: {newOrder.dueDate}""")
+
+
 def create_new_order():
+    newOrder = Order()
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("Create New Order")
+    print("(ENTER '-1' to Back)")
+    newOrder.memberID = input("Enter MemberID for New Order: ")
     while True:
-        os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+        if ("MB000" <= newOrder.memberID <= "MB999" and len(newOrder.memberID) == 5 and check_duplicate_SQL(newOrder.memberID, "memberID", "Member")) or (newOrder.memberID == "-1" and len(newOrder.memberID) == 2):
+            break
+        else:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            print("Create New Order")
+            print("(ENTER '-1' to Back)")
+            print("!!!MemberID NOT EXIST or INVALID!!!")
+            newOrder.memberID = input("Enter MemberID for New Order: ")
+    if newOrder.memberID == "-1" and len(newOrder.memberID) == 2:
+        return
+
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("Create New Order")
+    print("(ENTER '-1' to Back)")
+    newOrder.isbn = input("Enter Book ISBN for New Order: ")
+    while True:
+        if ("0000000000000" <= newOrder.isbn <= "9999999999999" and len(newOrder.isbn) == 13 and check_duplicate_SQL(newOrder.isbn, "isbn", "Book")) or (newOrder.isbn == "-1" and len(newOrder.isbn) == 2):
+            break
+        else:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            print("Create New Order")
+            print("(ENTER '-1' to Back)")
+            print("!!!ISBN NOT EXIST or INVALID!!!")
+            newOrder.isbn = input("Enter Book ISBN for New Order: ")
+    if newOrder.isbn == "-1" and len(newOrder.isbn) == 2:
+        return
+
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("Create New Order")
+    print("(ENTER '-1' to Back)")
+    numberOfRentDays = input("Enter Borrow Time in Days(Up to 30 Days): ")
+    while True:
+        if numberOfRentDays == "-1" and len(numberOfRentDays) == 2:
+            break
+        if len(numberOfRentDays) <= 2:
+            numberOfRentDays.zfill(2)
+            if ("0" <= (numberOfRentDays[0]) <= "9") and ("0" <= (numberOfRentDays[1]) <= "9"):
+                if 1 <= int(numberOfRentDays) <= 30:
+                    break
+        else:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            print("Create New Order")
+            print("(ENTER '-1' to Back)")
+            numberOfRentDays = input(
+                "Enter Borrow Time in Days(Up to 30 Days): ")
+    if numberOfRentDays == "-1" and len(numberOfRentDays) == 2:
+        return
+
+    sql = "SELECT MAX(orderID) FROM `Order`"
+    result = fetchone_from_MySQL(sql)
+    latestOrderID = result[0]
+    newOrder.orderID = str(int(latestOrderID)+1).zfill(6)
+    newOrder.staffID = person.ID
+    newOrder.rentDate = datetime.datetime.now()
+    newOrder.dueDate = newOrder.rentDate.date() + timedelta(days=int(numberOfRentDays))
+    newOrder.status = "On Loan"
+
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    display_new_order_detail(newOrder)
+    choice = input(
+        "Please Enter 'Y'(Yes) to Confirm or 'N'(No) Cancel: ")
+    while True:
+        choice = choice.upper()
+        if choice == "Y" and len(choice) == 1:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            sql = f"""INSERT IGNORE INTO `Order` (orderID, staffID, memberID, isbn, rentDate, dueDate, status) 
+VALUES ('{newOrder.orderID}', '{newOrder.staffID}', '{newOrder.memberID}', '{newOrder.isbn}', '{newOrder.rentDate}', '{newOrder.dueDate}', '{newOrder.status}')
+            """
+            update_to_MySQL(sql)
+            print("Create Order Successful")
+            input("(Press Enter to continue)")
+            break
+        if choice == "N" and len(choice) == 1:
+            break
+        else:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            print("Update Book Information")
+            display_new_order_detail(newOrder)
+            print("!!!You Have Enter INVALID Value!!!")
+            choice = input(
+                "Please Enter 'Y'(Yes) to Confirm or 'N'(No) Cancel: ")
 
 
 def edit_order():
@@ -1393,6 +1513,11 @@ def manage_order():
         if choice == "-1" and len(choice) == 2:
             break
 ###
+###
+# Manage Member Menu
+def display_manage_member_menu
+def manage_member()
+###
 
 
 def display_member_menu():
@@ -1452,6 +1577,9 @@ def staff_UI():
                 break
             if choice == "2" and len(choice) == 1:
                 manage_order()
+                break
+            if choice == "3" and len(choice) == 1:
+                manage_member()
                 break
             if choice == "4" and len(choice) == 1:
                 edit_personal_information()
