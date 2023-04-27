@@ -1349,7 +1349,7 @@ VALUES ('{newOrder.orderID}', '{newOrder.staffID}', '{newOrder.memberID}',
             """
             update_to_MySQL(sql)
             update_one_attribute_SQL(
-                "On Loan", "avalability", "book", "isbn", newOrder.isbn)
+                "On Loan", "availability", "book", "isbn", newOrder.isbn)
             print("Create Order Successful")
             input("(Press Enter to continue)")
             break
@@ -1460,13 +1460,8 @@ def recieve_returning_book():
     if (isbn == "-1" and len(isbn) == 2):
         return
     result = search_using_exact_keywords_MySQL(isbn, "isbn", "Book")
-    book = Book()
-    book.isbn = result[0]
-    book.title = result[1]
-    book.author = result[2]
-    book.publisher = result[3]
-    book.availability = result[4]
-    book.shelf = result[5]
+    book = Book(result[0], result[1], result[2],
+                result[3], result[4], result[5])
     os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
     print("Returning Book Information")
     display_book_info(book)
@@ -1576,6 +1571,243 @@ def search_member_by_email():
         # conver email to keyword to search
         display_search_member_by_email(email)
         input("(Press ENTER to Search Again)")
+# edit member
+
+
+def display_edit_member_menu():
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("Edit Member Menu")
+    print("1. Search Member by Email to EDIT")
+    print("2. Search Member by Name to EDIT")
+    print("3. Enter MemberID to EDIT")
+    print("(Enter '-1' to BACK)")
+
+
+def update_member_to_MySQL(member):
+    update_one_attribute_SQL(
+        member.fName, "fName", "member", "memberID", member.ID)
+    update_one_attribute_SQL(
+        member.lName, "lName", "member", "memberID", member.ID)
+    update_one_attribute_SQL(
+        member.email, "email", "member", "memberID", member.ID)
+
+
+def search_member_by_email_to_edit():
+    email = "-1"
+    while True:
+        os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+        print("(Enter '-1' to BACK)")
+        # Input bookTitle
+        email = input("Search Member Email: ")
+        if email == "-1" and len(email) == 2:
+            break
+        display_search_member_by_email(email)
+        print("Press ENTER if you want to search again")
+
+        memberID = input("ENTER MemberID you want to EDIT: ")
+        if ("MB000" <= memberID <= "MB999" and len(memberID) == 5 and check_duplicate_SQL(memberID, "memberID", "Member")) or (memberID == "-1" and len(memberID) == 2):
+            break
+        else:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            print("The MemberID NOT EXIST or IS INVALID")
+            input("(Press ENTER to RE-ENTER)")
+    if (memberID == "-1" and len(memberID) == 2):
+        return
+    result = search_using_exact_keywords_MySQL(memberID, "memberID", "Member")
+    member = PersonInfo(result[0], result[1], result[2],
+                        result[3], result[4], result[5])
+
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("Member Information")
+    display_member_info(member)
+    input("(Press ENTER to continue)")
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("(Leave BLANK if you to keep the same data)")
+    newFName = input("ENTER New Frist Name: ")
+    if not len(newFName) == 0:
+        member.fName = newFName
+    newLName = input("ENTER New Last Name: ")
+    if not len(newLName) == 0:
+        member.lName = newLName
+    newEmail = input("ENTER New Email: ")
+    if not len(newEmail) == 0:
+        member.email = newEmail
+
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("Update Member Information")
+    display_member_info(member)
+    choice = input(
+        "Please Enter 'Y'(Yes) to Confirm or 'N'(No) Cancel: ")
+    while True:
+        choice = choice.upper()
+        if choice == "Y" and len(choice) == 1:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            update_member_to_MySQL(member)
+            print("Update Member Successful")
+            input("(Press Enter to continue)")
+            break
+        if choice == "N" and len(choice) == 1:
+            break
+        else:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            print("Update Member Information")
+            display_member_info(member)
+            print("!!!You Have Enter INVALID Value!!!")
+            choice = input(
+                "Please Enter 'Y'(Yes) to Confirm or 'N'(No) Cancel: ")
+
+
+def search_member_by_name_to_edit():
+    name = "-1"
+    while True:
+        os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+        print("(Enter '-1' to BACK)")
+        # Input bookTitle
+        name = input("Search Member Name: ")
+        if name == "-1" and len(name) == 2:
+            break
+        display_search_member_by_name(name)
+        print("Press ENTER if you want to search again")
+
+        memberID = input("ENTER MemberID you want to EDIT: ")
+        if ("MB000" <= memberID <= "MB999" and len(memberID) == 5 and check_duplicate_SQL(memberID, "memberID", "Member")) or (memberID == "-1" and len(memberID) == 2):
+            break
+        else:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            print("The MemberID NOT EXIST or IS INVALID")
+            input("(Press ENTER to RE-ENTER)")
+    if (memberID == "-1" and len(memberID) == 2):
+        return
+    result = search_using_exact_keywords_MySQL(memberID, "memberID", "Member")
+    member = PersonInfo(result[0], result[1], result[2],
+                        result[3], result[4], result[5])
+
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("Member Information")
+    display_member_info(member)
+    input("(Press ENTER to continue)")
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("(Leave BLANK if you to keep the same data)")
+    newFName = input("ENTER New Frist Name: ")
+    if not len(newFName) == 0:
+        member.fName = newFName
+    newLName = input("ENTER New Last Name: ")
+    if not len(newLName) == 0:
+        member.lName = newLName
+    newEmail = input("ENTER New Email: ")
+    if not len(newEmail) == 0:
+        member.email = newEmail
+
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("Update Member Information")
+    display_member_info(member)
+    choice = input(
+        "Please Enter 'Y'(Yes) to Confirm or 'N'(No) Cancel: ")
+    while True:
+        choice = choice.upper()
+        if choice == "Y" and len(choice) == 1:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            update_member_to_MySQL(member)
+            print("Update Member Successful")
+            input("(Press Enter to continue)")
+            break
+        if choice == "N" and len(choice) == 1:
+            break
+        else:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            print("Update Member Information")
+            display_member_info(member)
+            print("!!!You Have Enter INVALID Value!!!")
+            choice = input(
+                "Please Enter 'Y'(Yes) to Confirm or 'N'(No) Cancel: ")
+
+
+def edit_member_by_ID():
+    while True:
+        os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+        print("(Enter '-1' to BACK)")
+        memberID = input("ENTER MemberID you want to EDIT: ")
+        if ("MB000" <= memberID <= "MB999" and len(memberID) == 5 and check_duplicate_SQL(memberID, "memberID", "Member")) or (memberID == "-1" and len(memberID) == 2):
+            break
+        else:
+            print("The MemberID NOT EXIST or IS INVALID")
+            input("(Press ENTER to RE-ENTER)")
+    if (memberID == "-1" and len(memberID) == 2):
+        return
+    result = search_using_exact_keywords_MySQL(memberID, "memberID", "Member")
+    member = PersonInfo(result[0], result[1], result[2],
+                        result[3], result[4], result[5])
+
+    if member.status == "Disabled":
+        print("Member has been already Deleted")
+        input("(Press ENTER to Back)")
+        return
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("Member Information")
+    display_member_info(member)
+    input("(Press ENTER to continue)")
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("(Leave BLANK if you to keep the same data)")
+    newFName = input("ENTER New Frist Name: ")
+    if not len(newFName) == 0:
+        member.fName = newFName
+    newLName = input("ENTER New Last Name: ")
+    if not len(newLName) == 0:
+        member.lName = newLName
+    newEmail = input("ENTER New Email: ")
+    if not len(newEmail) == 0:
+        member.email = newEmail
+
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("Update Member Information")
+    display_member_info(member)
+    choice = input(
+        "Please Enter 'Y'(Yes) to Confirm or 'N'(No) Cancel: ")
+    while True:
+        choice = choice.upper()
+        if choice == "Y" and len(choice) == 1:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            update_member_to_MySQL(member)
+            print("Update Member Successful")
+            input("(Press Enter to continue)")
+            break
+        if choice == "N" and len(choice) == 1:
+            break
+        else:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            print("Update Member Information")
+            display_member_info(member)
+            print("!!!You Have Enter INVALID Value!!!")
+            choice = input(
+                "Please Enter 'Y'(Yes) to Confirm or 'N'(No) Cancel: ")
+
+
+def edit_member():
+    while True:
+        display_edit_member_menu()
+        choice = input("ENTER your action: ")
+        while (True):
+            if ("1" <= choice <= "3" and len(choice) == 1) or choice == "-1":
+                if choice == "-1":
+                    break
+                if choice == "1":
+                    search_member_by_email_to_edit()
+                    break
+                if choice == "2":
+                    search_member_by_name_to_edit()
+                    break
+                if choice == "3":
+                    edit_member_by_ID()
+                    break
+            else:
+                display_edit_member_menu()
+                print("!!!You Have Enter INVALID Value!!!")
+                choice = input("ENTER your action: ")
+        if choice == "-1":
+            break
+
+
+###
 
 
 def display_search_member_by_name(name):
@@ -1637,9 +1869,6 @@ def search_member():
         if choice == "-1" and len(choice) == 2:
             break
 
-###
-# working Top
-
 
 def display_delete_member_menu():
     os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
@@ -1656,120 +1885,112 @@ Name: {member.fName} {member.lName}
 Email: {member.email}""")
 
 
-def search_book_by_isbn_to_delete():
-    while True:
-        os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
-        print("(Enter '-1' to BACK)")
-        # Input isbn
-        isbn = input("Search book isbn: ")
-        if isbn == "-1" and len(isbn) == 2:
-            break
-        search_book_by_isbn(isbn)
-        print("Press ENTER if you want to search again")
-        isbn = input("ENTER isbn of Book you want to DELETE: ")
-        isExist = bool(False)
-        isExist = (check_duplicate_isbn_SQL(isbn))
-        if ("0000000000000" <= isbn <= "9999999999999" and len(isbn) == 13 and isExist) or (isbn == "-1" and len(isbn) == 2):
-            break
-        else:
-            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
-            print("The ISBN NOT EXIST Or IS INVALID")
-            input("(Press ENTER to RE-ENTER)")
-    if (isbn == "-1" and len(isbn) == 2):
-        return
-    result = search_using_exact_keywords_MySQL(isbn, "isbn", "Book")
-    book = Book(result[0], result[1], result[2],
-                result[3], result[4], result[5])
-    if book.availability == "On Loan":
-        print("Book is currently On Loan")
-        print("CANNOT DELETE")
-        input("(Press ENTER to Back)")
-        return
-    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
-    print("Delete Book Information")
-    display_book_info(book)
-    choice = input(
-        "Please Enter 'Y'(Yes) to Confirm or 'N'(NO) Cancel: ")
-    while True:
-        choice = choice.upper()
-        if (choice == "Y") and (len(choice) == 1):
-            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
-            update_one_attribute_SQL(
-                "Deleted", "availability", "book", "isbn", isbn)
-            print("Delete Book Successful")
-            input("(Press Enter to continue)")
-            break
-        if (choice == "N") and (len(choice) == 1):
-            break
-        else:
-            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
-            print("Delete Book Information")
-            display_book_info(book)
-            print("!!!You Have Enter INVALID Value!!!")
-            choice = input(
-                "Please Enter 'Y'(Yes) to Confirm or 'N'(NO) Cancel: ")
-
-# working
-
-
-def search_member_by_name_to_delete():
-    isbn = "-1"
+def search_member_by_email_to_delete():
+    email = "-1"
     while True:
         os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
         print("(Enter '-1' to BACK)")
         # Input bookTitle
-        name = input("Search book title: ")
-        if bookTitle == "-1" and len(bookTitle) == 2:
+        email = input("Search Member Email: ")
+        if email == "-1" and len(email) == 2:
             break
-        search_book_by_title(bookTitle)
+        display_search_member_by_email(email)
         print("Press ENTER if you want to search again")
 
-        isbn = input("ENTER isbn of Book you want to DELETE: ")
-        isExist = bool(False)
-        isExist = (check_duplicate_isbn_SQL(isbn))
-        if ("0000000000000" <= isbn <= "9999999999999" and len(isbn) == 13 and isExist) or (isbn == "-1" and len(isbn) == 2):
+        memberID = input("ENTER MemberID you want to DELETE: ")
+        if ("MB000" <= memberID <= "MB999" and len(memberID) == 5 and check_duplicate_SQL(memberID, "memberID", "Member")) or (memberID == "-1" and len(memberID) == 2):
             break
         else:
             os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
-            print("The ISBN NOT EXIST Or IS INVALID")
+            print("The MemberID NOT EXIST or IS INVALID")
             input("(Press ENTER to RE-ENTER)")
-    if (isbn == "-1" and len(isbn) == 2) or (bookTitle == "-1" and len(bookTitle) == 2):
+    if (memberID == "-1" and len(memberID) == 2):
         return
-    result = search_using_exact_keywords_MySQL(isbn, "isbn", "Book")
-    book = Book(result[0], result[1], result[2],
-                result[3], result[4], result[5])
+    result = search_using_exact_keywords_MySQL(memberID, "memberID", "Member")
+    member = PersonInfo(result[0], result[1], result[2],
+                        result[3], result[4], result[5])
 
-    if book.availability == "On Loan":
-        print("Book is currently On Loan")
-        print("CANNOT DELETE")
+    if member.status == "Disabled":
+        print("Member has been already Deleted")
         input("(Press ENTER to Back)")
         return
     os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
-    print("Delete Book Information")
-    display_book_info(book)
+    print("Delete Member Information")
+    display_member_info(member)
     choice = input(
-        "Please Enter 'Y'(Yes) to Confirm or 'N'(No) to Cancel: ")
+        "Please Enter 'Y'(Yes) to Confirm or 'N'(No) Cancel: ")
     while True:
         choice = choice.upper()
-        if (choice == "Y") and (len(choice) == 1):
-            input(choice)
+        if choice == "Y" and len(choice) == 1:
             os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
             update_one_attribute_SQL(
-                "Deleted", "availability", "book", "isbn", isbn)
-            print("Delete Book Successful")
+                "Disabled", "status", "member", "memberID", member.ID)
+            print("Delete Member Successful")
             input("(Press Enter to continue)")
             break
-        if (choice == "N") and (len(choice) == 1):
+        if choice == "N" and len(choice) == 1:
             break
         else:
             os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
             print("Delete Book Information")
-            display_book_info(book)
+            display_member_info(member)
             print("!!!You Have Enter INVALID Value!!!")
             choice = input(
                 "Please Enter 'Y'(Yes) to Confirm or 'N'(No) Cancel: ")
 
-# working Done
+
+def search_member_by_name_to_delete():
+    name = "-1"
+    while True:
+        os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+        print("(Enter '-1' to BACK)")
+        # Input bookTitle
+        name = input("Search Member Name: ")
+        if name == "-1" and len(name) == 2:
+            break
+        display_search_member_by_name(name)
+        print("Press ENTER if you want to search again")
+
+        memberID = input("ENTER MemberID you want to DELETE: ")
+        if ("MB000" <= memberID <= "MB999" and len(memberID) == 5 and check_duplicate_SQL(memberID, "memberID", "Member")) or (memberID == "-1" and len(memberID) == 2):
+            break
+        else:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            print("The MemberID NOT EXIST or IS INVALID")
+            input("(Press ENTER to RE-ENTER)")
+    if (memberID == "-1" and len(memberID) == 2):
+        return
+    result = search_using_exact_keywords_MySQL(memberID, "memberID", "Member")
+    member = PersonInfo(result[0], result[1], result[2],
+                        result[3], result[4], result[5])
+
+    if member.status == "Disabled":
+        print("Member has been already Deleted")
+        input("(Press ENTER to Back)")
+        return
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("Delete Member Information")
+    display_member_info(member)
+    choice = input(
+        "Please Enter 'Y'(Yes) to Confirm or 'N'(No) Cancel: ")
+    while True:
+        choice = choice.upper()
+        if choice == "Y" and len(choice) == 1:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            update_one_attribute_SQL(
+                "Disabled", "status", "member", "memberID", member.ID)
+            print("Delete Member Successful")
+            input("(Press Enter to continue)")
+            break
+        if choice == "N" and len(choice) == 1:
+            break
+        else:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            print("Delete Book Information")
+            display_member_info(member)
+            print("!!!You Have Enter INVALID Value!!!")
+            choice = input(
+                "Please Enter 'Y'(Yes) to Confirm or 'N'(No) Cancel: ")
 
 
 def delete_member_by_ID():
@@ -1815,7 +2036,6 @@ def delete_member_by_ID():
             print("!!!You Have Enter INVALID Value!!!")
             choice = input(
                 "Please Enter 'Y'(Yes) to Confirm or 'N'(No) Cancel: ")
-# working bottom
 
 
 def delete_member():
@@ -1841,7 +2061,6 @@ def delete_member():
                 choice = input("ENTER your action: ")
         if choice == "-1":
             break
-###
 
 
 def manage_member():
