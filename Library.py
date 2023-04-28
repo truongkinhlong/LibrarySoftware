@@ -2851,10 +2851,14 @@ def manage_staff():
             break
 
 
-# Gennerate Report
+# Gennerate Repor
 # working Top
 def generate_report():
-
+    # amountOfAvailableBooks
+    # amountOfOnLoanBooks
+    # amountOfCurrentOnLoanOrder
+    # amountOfCurrentOverdueOrder
+    # amountOfTodayReturnedBook
  # Working Bot
 
     ################################################################
