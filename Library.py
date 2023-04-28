@@ -425,7 +425,8 @@ def edit_name():
     print(f"This is your New Name: {fName} {lName}")
     choice = input("Please Enter 'Y'(Yes) to Confirm or 'N'(NO) Cancel: ")
     while True:
-        if choice == "Y" or "y" and len(choice) == 1:
+        choice = choice.upper()
+        if choice == "Y" and len(choice) == 1:
             update_one_attribute_SQL(
                 fName, "fName", title, f"{title}ID", person.ID)
             update_one_attribute_SQL(
@@ -433,7 +434,7 @@ def edit_name():
             person.fName = fName
             person.lName = lName
             break
-        if choice == "N" or "n" and len(choice) == 1:
+        if choice == "N" and len(choice) == 1:
             break
         else:
             os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
@@ -451,12 +452,13 @@ def edit_email():
     print(f"This is your New Email: {email}")
     choice = input("Please Enter 'Y'(Yes) to Confirm or 'N'(NO) Cancel: ")
     while True:
-        if choice == "Y" or "y" and len(choice) == 1:
+        choice = choice.upper()
+        if choice == "Y" and len(choice) == 1:
             update_one_attribute_SQL(
                 email, "email", title, f"{title}ID", person.ID)
             person.email = email
             break
-        if choice == "N" or "n" and len(choice) == 1:
+        if choice == "N" and len(choice) == 1:
             break
         else:
             os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
@@ -584,7 +586,11 @@ def insert_new_book():
         newBook.title = input("Title: ")
         newBook.author = input("Author: ")
         newBook.publisher = input("Publisher: ")
-
+        if len(newBook.title) == 0:
+            print("The Title Cannot be BLANK")
+        else:
+            break
+        input("(Press ENTER to RE-ENTER)")
     newBook.availability = "Available"
     while True:
         os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
@@ -601,10 +607,11 @@ def insert_new_book():
     choice = input(
         "Please Enter 'Y'(Yes) to Confirm or 'N'(NO) Cancel: ")
     while True:
-        if choice == "Y" or "y" and len(choice) == 1:
+        choice = choice.upper()
+        if choice == "Y" and len(choice) == 1:
             insert_new_book_SQL(newBook)
             break
-        if choice == "N" or "n" and len(choice) == 1:
+        if choice == "N" and len(choice) == 1:
             break
         else:
             os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
@@ -1263,6 +1270,12 @@ Rent Date: {newOrder.rentDate}       Due Date: {newOrder.dueDate}""")
 
 
 def create_new_order():
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    if title == "Admin":
+        print("Admin Cannot Create New Order")
+        print("Please Login as Staff to Create New Order")
+        input("Press ENTER to Back")
+        return
     newOrder = Order()
     os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
     print("Create New Order")
@@ -1625,8 +1638,22 @@ def search_member():
         if choice == "-1" and len(choice) == 2:
             break
 
-# Working Top
-# Working
+# Create member
+
+
+def insert_new_member_SQL(newMember):
+    sql = f"""INSERT INTO Member (memberID, fName, lName, email, password, status)
+VALUES ('{newMember.ID}', '{newMember.fName}', '{newMember.lName}',
+        '{ newMember.email}', '{newMember.password}', '{newMember.status}')
+ON DUPLICATE KEY UPDATE
+    memberID = VALUES(memberID),
+    fName = VALUES(fName),
+    lName = VALUES(lName),
+    email = VALUES(email),
+    password = VALUES(password),
+    status = VALUES(status);"""
+    dbcursor.execute(sql)
+    db.commit()
 
 
 def create_new_member():
@@ -1637,132 +1664,71 @@ def create_new_member():
     input("(Press ENTER to continue)")
     while True:
         os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
-        newMember.title = input("Frist Name: ")
-        newMember.author = input("Last Name: ")
-        newMember.publisher = input("Email: ")
-
-    newBook.availability = "Available"
-    while True:
-        os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
-        newBook.shelf = input("Shelf(only one letter from A to Z): ")
-        newBook.shelf = newBook.shelf.upper()
-        if len(newBook.shelf) == 1 and "A" <= newBook.shelf <= "Z":
+        print("Please Insert New Member Information")
+        print("(ENTER '-1' to Back)")
+        isReturn = False
+        newMember.fName = input("Frist Name: ")
+        if newMember.fName == "-1" and len(newMember.fName) == 2:
+            isReturn = True
             break
-        else:
-            print("!!!You Have Enter INVALID Value!!!")
-            input("(Press ENTER to RE-ENTER)")
+        newMember.lName = input("Last Name: ")
+        if newMember.lName == "-1" and len(newMember.lName) == 2:
+            isReturn = True
+            break
+        newMember.email = input("Email: ")
+        if newMember.email == "-1" and len(newMember.email) == 2:
+            isReturn = True
+            break
+        newMember.password = input("Password: ")
+        if newMember.password == "-1" and len(newMember.password) == 2:
+            isReturn = True
+            break
+        isBreak = True
+        if len(newMember.fName) == 0:
+            isBreak = False
+            print("!!!Frist Name CANNOT be BLANK!!!")
+        if len(newMember.lName) == 0:
+            isBreak = False
+            print("!!!Last Name CANNOT be BLANK!!!")
+        if len(newMember.email) == 0:
+            isBreak = False
+            print("!!!Email CANNOT be BLANK!!!")
+        if len(newMember.password) == 0:
+            isBreak = False
+            print("!!!Password CANNOT be BLANK!!!")
+        if isBreak:
+            break
+        input("(Press ENTER to RE-ENTER)")
+    if isReturn:
+        return
+
+    newMember.status = "Active"
+    sql = "SELECT MAX(memberID) FROM Member;"
+    result = fetchone_from_MySQL(sql)
+    latestMemberIDnumber = result[0]
+    newMember.ID = "MB"+str(int(latestMemberIDnumber[-3:])+1).zfill(3)
+
     os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
-    print("New Book Information")
-    display_book_info(newBook)
+    print("New Member Information")
+    display_member_info(newMember)
     choice = input(
         "Please Enter 'Y'(Yes) to Confirm or 'N'(NO) Cancel: ")
     while True:
-        if choice == "Y" or "y" and len(choice) == 1:
-            insert_new_book_SQL(newBook)
-            break
-        if choice == "N" or "n" and len(choice) == 1:
-            break
-        else:
-            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
-            print("New Book Information")
-            display_book_info(newBook)
-            print("!!!You Have Enter INVALID Value!!!")
-            choice = input(
-                "Please Enter 'Y'(Yes) to Confirm or 'N'(NO) Cancel: ")
-
-
-def create_new_member():  # dont touch
-    newOrder = Order()
-    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
-    print("Create New Order")
-    print("(ENTER '-1' to Back)")
-    newOrder.memberID = input("Enter MemberID for New Order: ")
-    while True:
-        if ("MB000" <= newOrder.memberID <= "MB999" and len(newOrder.memberID) == 5 and check_duplicate_SQL(newOrder.memberID, "memberID", "Member")) or (newOrder.memberID == "-1" and len(newOrder.memberID) == 2):
-            break
-        else:
-            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
-            print("Create New Order")
-            print("(ENTER '-1' to Back)")
-            print("!!!MemberID NOT EXIST or INVALID!!!")
-            newOrder.memberID = input("Enter MemberID for New Order: ")
-    if newOrder.memberID == "-1" and len(newOrder.memberID) == 2:
-        return
-
-    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
-    print("Create New Order")
-    print("(ENTER '-1' to Back)")
-    newOrder.isbn = input("Enter Book ISBN for New Order: ")
-    while True:
-        if ("0000000000000" <= newOrder.isbn <= "9999999999999" and len(newOrder.isbn) == 13 and check_duplicate_SQL(newOrder.isbn, "isbn", "Book")) or (newOrder.isbn == "-1" and len(newOrder.isbn) == 2):
-            break
-        else:
-            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
-            print("Create New Order")
-            print("(ENTER '-1' to Back)")
-            print("!!!ISBN NOT EXIST or INVALID!!!")
-            newOrder.isbn = input("Enter Book ISBN for New Order: ")
-    if newOrder.isbn == "-1" and len(newOrder.isbn) == 2:
-        return
-
-    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
-    print("Create New Order")
-    print("(ENTER '-1' to Back)")
-    numberOfRentDays = input("Enter Borrow Time in Days(Up to 30 Days): ")
-    while True:
-        if numberOfRentDays == "-1" and len(numberOfRentDays) == 2:
-            break
-        if len(numberOfRentDays) <= 2:
-            numberOfRentDays.zfill(2)
-            if ("0" <= (numberOfRentDays[0]) <= "9") and ("0" <= (numberOfRentDays[1]) <= "9"):
-                if 1 <= int(numberOfRentDays) <= 30:
-                    break
-        else:
-            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
-            print("Create New Order")
-            print("(ENTER '-1' to Back)")
-            numberOfRentDays = input(
-                "Enter Borrow Time in Days(Up to 30 Days): ")
-    if numberOfRentDays == "-1" and len(numberOfRentDays) == 2:
-        return
-
-    sql = "SELECT MAX(orderID) FROM `Order`"
-    result = fetchone_from_MySQL(sql)
-    latestOrderID = result[0]
-    newOrder.orderID = str(int(latestOrderID)+1).zfill(6)
-    newOrder.staffID = person.ID
-    newOrder.rentDate = datetime.datetime.now()
-    newOrder.dueDate = newOrder.rentDate.date() + timedelta(days=int(numberOfRentDays))
-    newOrder.status = "On Loan"
-
-    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
-    display_new_order_detail(newOrder)
-    choice = input(
-        "Please Enter 'Y'(Yes) to Confirm or 'N'(No) Cancel: ")
-    while True:
         choice = choice.upper()
         if choice == "Y" and len(choice) == 1:
-            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
-            sql = f"""INSERT IGNORE INTO `Order` (orderID, staffID, memberID, isbn, rentDate, dueDate, status)
-VALUES ('{newOrder.orderID}', '{newOrder.staffID}', '{newOrder.memberID}',
-        '{newOrder.isbn}', '{newOrder.rentDate}', '{newOrder.dueDate}', '{newOrder.status}')
-            """
-            update_to_MySQL(sql)
-            update_one_attribute_SQL(
-                "On Loan", "availability", "book", "isbn", newOrder.isbn)
-            print("Create Order Successful")
-            input("(Press Enter to continue)")
+            insert_new_member_SQL(newMember)
             break
         if choice == "N" and len(choice) == 1:
             break
         else:
             os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
-            print("Update Book Information")
-            display_new_order_detail(newOrder)
+            print("New Member Information")
+            display_member_info(newMember)
             print("!!!You Have Enter INVALID Value!!!")
             choice = input(
-                "Please Enter 'Y'(Yes) to Confirm or 'N'(No) Cancel: ")
-# Working Bot
+                "Please Enter 'Y'(Yes) to Confirm or 'N'(NO) Cancel: ")
+
+
 # Edit member
 
 
@@ -1786,6 +1752,7 @@ def update_member_to_MySQL(member):
 
 def search_member_by_email_to_edit():
     email = "-1"
+    memberID = "-1"
     while True:
         os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
         print("(Enter '-1' to BACK)")
@@ -1851,6 +1818,7 @@ def search_member_by_email_to_edit():
 
 def search_member_by_name_to_edit():
     name = "-1"
+    memberID = "-1"
     while True:
         os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
         print("(Enter '-1' to BACK)")
@@ -2017,6 +1985,7 @@ Email: {member.email}""")
 
 def search_member_by_email_to_delete():
     email = "-1"
+    memberID = "-1"
     while True:
         os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
         print("(Enter '-1' to BACK)")
@@ -2071,6 +2040,7 @@ def search_member_by_email_to_delete():
 
 def search_member_by_name_to_delete():
     name = "-1"
+    memberID = "-1"
     while True:
         os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
         print("(Enter '-1' to BACK)")
@@ -2219,7 +2189,676 @@ def manage_member():
         if choice == "-1" and len(choice) == 2:
             break
 
-###
+# Manage Staff
+
+
+def display_manage_staff_menu():
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("""Manage Staff Menu:
+1. Search Staff
+2. Create New Staff
+3. Edit Staff
+4. Delete Staff
+(Enter '-1' to BACK)""")
+
+# Search Staff
+
+
+def display_search_staff_menu():
+    print("""Search Staff Menu:
+1. Search Staff by Email
+2. Search Staff by Name
+(Enter '-1' to BACK)""")
+
+
+def display_search_staff_by_email(email):
+    # Extract keywords
+    keywords = email.split(" ")
+    # Build SQL to search
+    sql = f"SELECT staffID, fName, lName, email FROM Staff WHERE ("
+    for i in range(len(keywords)):
+        if i == 0:
+            sql += f"email LIKE '%" + keywords[i] + "%'"
+        else:
+            sql += f" OR email LIKE '%" + keywords[i] + "%'"
+        sql += ") AND status <> 'Disabled'"
+    results = fetchall_from_MySQL(sql)
+    if len(results) > 0:
+        for order in results:
+            print(order)
+
+    else:
+        print("No Staff Found")
+
+
+def search_staff_by_email():
+    while True:
+        os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+        print("Search Staff by Email")
+        print("(Enter '-1' to BACK)")
+        email = input("ENTER Email: ")
+        if email == "-1" and len(email) == 2:
+            break
+        # conver email to keyword to search
+        display_search_staff_by_email(email)
+        input("(Press ENTER to Search Again)")
+
+
+def display_search_staff_by_name(name):
+    # Extract keywords
+    keywords = name.split(" ")
+    # Build SQL to search
+    sql = f"SELECT staffID, fName, lName, email FROM Staff WHERE ("
+    for i in range(len(keywords)):
+        if i == 0:
+            sql += f"fName LIKE '%" + keywords[i] + "%'"
+        else:
+            sql += f" OR fName LIKE '%" + keywords[i] + "%'"
+    for i in range(len(keywords)):
+        sql += f"OR lName LIKE '%" + keywords[i] + "%'"
+        sql += ") AND status <> 'Disabled'"
+    results = fetchall_from_MySQL(sql)
+
+    if len(results) > 0:
+        for order in results:
+            print(order)
+
+    else:
+        print("No Staff Found")
+
+
+def search_staff_by_name():
+    while True:
+        os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+        print("Search Staff by Name")
+        print("(Enter '-1' to BACK)")
+        name = input("ENTER Staff Name: ")
+        if name == "-1" and len(name) == 2:
+            break
+        # conver email to keyword to search
+        display_search_staff_by_name(name)
+        input("(Press ENTER to Search Again)")
+
+
+def search_staff():
+    while True:
+        os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+        display_search_staff_menu()
+        choice = input("ENTER your action: ")
+        while True:
+            if choice == "-1" and len(choice) == 2:
+                break
+            if choice == "1" and len(choice) == 1:
+                search_staff_by_email()
+                break
+            if choice == "2" and len(choice) == 1:
+                search_staff_by_name()
+                break
+            else:
+                # CLEAR SCREEN
+                os.system("cls" if os.name == "nt" else "clear")
+                display_search_staff_menu()
+                print("!!!You Have Enter INVALID Value!!!")
+                choice = input("ENTER your action: ")
+        if choice == "-1" and len(choice) == 2:
+            break
+
+# Create Staff
+
+
+def insert_new_staff_SQL(newStaff):
+    sql = f"""INSERT INTO Staff (staffID, fName, lName, email, password, status)
+VALUES ('{newStaff.ID}', '{newStaff.fName}', '{newStaff.lName}',
+        '{ newStaff.email}', '{newStaff.password}', '{newStaff.status}')
+ON DUPLICATE KEY UPDATE
+    staffID = VALUES(staffID),
+    fName = VALUES(fName),
+    lName = VALUES(lName),
+    email = VALUES(email),
+    password = VALUES(password),
+    status = VALUES(status);"""
+    dbcursor.execute(sql)
+    db.commit()
+
+
+def create_new_staff():
+    newStaff = PersonInfo("", "", "", "", "", "")
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("Please Insert New Staff Information")
+    print("(First Name, Last Name, Email, Password)")
+    input("(Press ENTER to continue)")
+    while True:
+        os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+        print("Please Insert New Staff Information")
+        print("(ENTER '-1' to Back)")
+        isReturn = False
+        newStaff.fName = input("Frist Name: ")
+        if newStaff.fName == "-1" and len(newStaff.fName) == 2:
+            isReturn = True
+            break
+        newStaff.lName = input("Last Name: ")
+        if newStaff.lName == "-1" and len(newStaff.lName) == 2:
+            isReturn = True
+            break
+        newStaff.email = input("Email: ")
+        if newStaff.email == "-1" and len(newStaff.email) == 2:
+            isReturn = True
+            break
+        newStaff.password = input("Password: ")
+        if newStaff.password == "-1" and len(newStaff.password) == 2:
+            isReturn = True
+            break
+        isBreak = True
+        if len(newStaff.fName) == 0:
+            isBreak = False
+            print("!!!Frist Name CANNOT be BLANK!!!")
+        if len(newStaff.lName) == 0:
+            isBreak = False
+            print("!!!Last Name CANNOT be BLANK!!!")
+        if len(newStaff.email) == 0:
+            isBreak = False
+            print("!!!Email CANNOT be BLANK!!!")
+        if len(newStaff.password) == 0:
+            isBreak = False
+            print("!!!Password CANNOT be BLANK!!!")
+        if isBreak:
+            break
+        input("(Press ENTER to RE-ENTER)")
+    if isReturn:
+        return
+    newStaff.status = "Active"
+    sql = "SELECT MAX(staffID) FROM Staff;"
+    result = fetchone_from_MySQL(sql)
+    latestStaffIDnumber = result[0]
+    newStaff.ID = "ST"+str(int(latestStaffIDnumber[-3:])+1).zfill(3)
+
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("New Staff Information")
+    display_staff_info(newStaff)
+    choice = input(
+        "Please Enter 'Y'(Yes) to Confirm or 'N'(NO) Cancel: ")
+    while True:
+        choice = choice.upper()
+        if choice == "Y" and len(choice) == 1:
+            insert_new_staff_SQL(newStaff)
+            break
+        if choice == "N" and len(choice) == 1:
+            break
+        else:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            print("New Staff Information")
+            display_staff_info(newStaff)
+            print("!!!You Have Enter INVALID Value!!!")
+            choice = input(
+                "Please Enter 'Y'(Yes) to Confirm or 'N'(NO) Cancel: ")
+
+
+# Edit Staff
+
+
+def display_edit_staff_menu():
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("Edit Staff Menu")
+    print("1. Search Staff by Email to EDIT")
+    print("2. Search Staff by Name to EDIT")
+    print("3. Enter StaffID to EDIT")
+    print("(Enter '-1' to BACK)")
+
+
+def update_staff_to_MySQL(staff):
+    update_one_attribute_SQL(
+        staff.fName, "fName", "staff", "staffID", staff.ID)
+    update_one_attribute_SQL(
+        staff.lName, "lName", "staff", "staffID", staff.ID)
+    update_one_attribute_SQL(
+        staff.email, "email", "staff", "staffID", staff.ID)
+
+
+def search_staff_by_email_to_edit():
+    email = "-1"
+    staffID = "-1"
+    while True:
+        os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+        print("(Enter '-1' to BACK)")
+        # Input bookTitle
+        email = input("Search Staff Email: ")
+        if email == "-1" and len(email) == 2:
+            break
+        display_search_staff_by_email(email)
+        print("Press ENTER if you want to search again")
+
+        staffID = input("ENTER StaffID you want to EDIT: ")
+        if ("ST000" <= staffID <= "ST999" and len(staffID) == 5 and check_duplicate_SQL(staffID, "staffID", "Staff")) or (staffID == "-1" and len(staffID) == 2):
+            break
+        else:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            print("The StaffID NOT EXIST or IS INVALID")
+            input("(Press ENTER to RE-ENTER)")
+    if (staffID == "-1" and len(staffID) == 2):
+        return
+    result = search_using_exact_keywords_MySQL(staffID, "staffID", "Staff")
+    staff = PersonInfo(result[0], result[1], result[2],
+                       result[3], result[4], result[5])
+
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("Staff Information")
+    display_staff_info(staff)
+    input("(Press ENTER to continue)")
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("(Leave BLANK if you to keep the same data)")
+    newFName = input("ENTER New Frist Name: ")
+    if not len(newFName) == 0:
+        staff.fName = newFName
+    newLName = input("ENTER New Last Name: ")
+    if not len(newLName) == 0:
+        staff.lName = newLName
+    newEmail = input("ENTER New Email: ")
+    if not len(newEmail) == 0:
+        staff.email = newEmail
+
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("Update Staff Information")
+    display_staff_info(staff)
+    choice = input(
+        "Please Enter 'Y'(Yes) to Confirm or 'N'(No) Cancel: ")
+    while True:
+        choice = choice.upper()
+        if choice == "Y" and len(choice) == 1:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            update_staff_to_MySQL(staff)
+            print("Update Staff Successful")
+            input("(Press Enter to continue)")
+            break
+        if choice == "N" and len(choice) == 1:
+            break
+        else:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            print("Update Staff Information")
+            display_staff_info(staff)
+            print("!!!You Have Enter INVALID Value!!!")
+            choice = input(
+                "Please Enter 'Y'(Yes) to Confirm or 'N'(No) Cancel: ")
+
+
+def search_staff_by_name_to_edit():
+    name = "-1"
+    staffID = "-1"
+    while True:
+        os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+        print("(Enter '-1' to BACK)")
+        # Input bookTitle
+        name = input("Search Staff Name: ")
+        if name == "-1" and len(name) == 2:
+            break
+        display_search_staff_by_name(name)
+        print("Press ENTER if you want to search again")
+
+        staffID = input("ENTER StaffID you want to EDIT: ")
+        if ("ST000" <= staffID <= "ST999" and len(staffID) == 5 and check_duplicate_SQL(staffID, "staffID", "Staff")) or (staffID == "-1" and len(staffID) == 2):
+            break
+        else:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            print("The StaffID NOT EXIST or IS INVALID")
+            input("(Press ENTER to RE-ENTER)")
+    if (staffID == "-1" and len(staffID) == 2):
+        return
+    result = search_using_exact_keywords_MySQL(staffID, "staffID", "Staff")
+    staff = PersonInfo(result[0], result[1], result[2],
+                       result[3], result[4], result[5])
+
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("Staff Information")
+    display_staff_info(staff)
+    input("(Press ENTER to continue)")
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("(Leave BLANK if you to keep the same data)")
+    newFName = input("ENTER New Frist Name: ")
+    if not len(newFName) == 0:
+        staff.fName = newFName
+    newLName = input("ENTER New Last Name: ")
+    if not len(newLName) == 0:
+        staff.lName = newLName
+    newEmail = input("ENTER New Email: ")
+    if not len(newEmail) == 0:
+        staff.email = newEmail
+
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("Update Staff Information")
+    display_staff_info(staff)
+    choice = input(
+        "Please Enter 'Y'(Yes) to Confirm or 'N'(No) Cancel: ")
+    while True:
+        choice = choice.upper()
+        if choice == "Y" and len(choice) == 1:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            update_staff_to_MySQL(staff)
+            print("Update Staff Successful")
+            input("(Press Enter to continue)")
+            break
+        if choice == "N" and len(choice) == 1:
+            break
+        else:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            print("Update Staff Information")
+            display_staff_info(staff)
+            print("!!!You Have Enter INVALID Value!!!")
+            choice = input(
+                "Please Enter 'Y'(Yes) to Confirm or 'N'(No) Cancel: ")
+
+
+def edit_staff_by_ID():
+    while True:
+        os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+        print("(Enter '-1' to BACK)")
+        staffID = input("ENTER StaffID you want to EDIT: ")
+        if ("ST000" <= staffID <= "ST999" and len(staffID) == 5 and check_duplicate_SQL(staffID, "staffID", "Staff")) or (staffID == "-1" and len(staffID) == 2):
+            break
+        else:
+            print("The StaffID NOT EXIST or IS INVALID")
+            input("(Press ENTER to RE-ENTER)")
+    if (staffID == "-1" and len(staffID) == 2):
+        return
+    result = search_using_exact_keywords_MySQL(staffID, "staffID", "Staff")
+    staff = PersonInfo(result[0], result[1], result[2],
+                       result[3], result[4], result[5])
+
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("Staff Information")
+    display_staff_info(staff)
+    input("(Press ENTER to continue)")
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("(Leave BLANK if you to keep the same data)")
+    newFName = input("ENTER New Frist Name: ")
+    if not len(newFName) == 0:
+        staff.fName = newFName
+    newLName = input("ENTER New Last Name: ")
+    if not len(newLName) == 0:
+        staff.lName = newLName
+    newEmail = input("ENTER New Email: ")
+    if not len(newEmail) == 0:
+        staff.email = newEmail
+
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("Update Staff Information")
+    display_staff_info(staff)
+    choice = input(
+        "Please Enter 'Y'(Yes) to Confirm or 'N'(No) Cancel: ")
+    while True:
+        choice = choice.upper()
+        if choice == "Y" and len(choice) == 1:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            update_staff_to_MySQL(staff)
+            print("Update Staff Successful")
+            input("(Press Enter to continue)")
+            break
+        if choice == "N" and len(choice) == 1:
+            break
+        else:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            print("Update Staff Information")
+            display_staff_info(staff)
+            print("!!!You Have Enter INVALID Value!!!")
+            choice = input(
+                "Please Enter 'Y'(Yes) to Confirm or 'N'(No) Cancel: ")
+
+
+def edit_staff():
+    while True:
+        display_edit_staff_menu()
+        choice = input("ENTER your action: ")
+        while (True):
+            if ("1" <= choice <= "3" and len(choice) == 1) or choice == "-1":
+                if choice == "-1":
+                    break
+                if choice == "1":
+                    search_staff_by_email_to_edit()
+                    break
+                if choice == "2":
+                    search_staff_by_name_to_edit()
+                    break
+                if choice == "3":
+                    edit_staff_by_ID()
+                    break
+            else:
+                display_edit_staff_menu()
+                print("!!!You Have Enter INVALID Value!!!")
+                choice = input("ENTER your action: ")
+        if choice == "-1":
+            break
+
+
+# Delete Staff
+def display_delete_staff_menu():
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("Delet Staff Menu")
+    print("1. Search Staff by Email to Delete")
+    print("2. Search Staff by Name to Delete")
+    print("3. Enter StaffID to Delete")
+    print("(Enter '-1' to BACK)")
+
+
+def display_staff_info(staff):
+    print(f"""StaffID: {staff.ID}
+Name: {staff.fName} {staff.lName}
+Email: {staff.email}""")
+
+
+def search_staff_by_email_to_delete():
+    email = "-1"
+    staffID = "-1"
+    while True:
+        os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+        print("(Enter '-1' to BACK)")
+        # Input bookTitle
+        email = input("Search Staff Email: ")
+        if email == "-1" and len(email) == 2:
+            break
+        display_search_staff_by_email(email)
+        print("Press ENTER if you want to search again")
+
+        staffID = input("ENTER StaffID you want to DELETE: ")
+        if ("ST000" <= staffID <= "ST999" and len(staffID) == 5 and check_duplicate_SQL(staffID, "staffID", "Staff")) or (staffID == "-1" and len(staffID) == 2):
+            break
+        else:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            print("The StaffID NOT EXIST or IS INVALID")
+            input("(Press ENTER to RE-ENTER)")
+    if (staffID == "-1" and len(staffID) == 2):
+        return
+    result = search_using_exact_keywords_MySQL(staffID, "staffID", "Staff")
+    staff = PersonInfo(result[0], result[1], result[2],
+                       result[3], result[4], result[5])
+
+    if staff.status == "Disabled":
+        print("Staff has been already Deleted")
+        input("(Press ENTER to Back)")
+        return
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("Delete Staff Information")
+    display_staff_info(staff)
+    choice = input(
+        "Please Enter 'Y'(Yes) to Confirm or 'N'(No) Cancel: ")
+    while True:
+        choice = choice.upper()
+        if choice == "Y" and len(choice) == 1:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            update_one_attribute_SQL(
+                "Disabled", "status", "Staff", "staffID", staff.ID)
+            print("Delete Staff Successful")
+            input("(Press Enter to continue)")
+            break
+        if choice == "N" and len(choice) == 1:
+            break
+        else:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            print("Delete Book Information")
+            display_staff_info(staff)
+            print("!!!You Have Enter INVALID Value!!!")
+            choice = input(
+                "Please Enter 'Y'(Yes) to Confirm or 'N'(No) Cancel: ")
+
+
+def search_staff_by_name_to_delete():
+    name = "-1"
+    staffID = "-1"
+    while True:
+        os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+        print("(Enter '-1' to BACK)")
+        # Input bookTitle
+        name = input("Search Staff Name: ")
+        if name == "-1" and len(name) == 2:
+            break
+        display_search_staff_by_name(name)
+        print("Press ENTER if you want to search again")
+
+        staffID = input("ENTER StaffID you want to DELETE: ")
+        if ("ST000" <= staffID <= "ST999" and len(staffID) == 5 and check_duplicate_SQL(staffID, "staffID", "Staff")) or (staffID == "-1" and len(staffID) == 2):
+            break
+        else:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            print("The StaffID NOT EXIST or IS INVALID")
+            input("(Press ENTER to RE-ENTER)")
+    if (staffID == "-1" and len(staffID) == 2):
+        return
+    result = search_using_exact_keywords_MySQL(staffID, "staffID", "Staff")
+    staff = PersonInfo(result[0], result[1], result[2],
+                       result[3], result[4], result[5])
+
+    if staff.status == "Disabled":
+        print("Staff has been already Deleted")
+        input("(Press ENTER to Back)")
+        return
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("Delete Staff Information")
+    display_staff_info(staff)
+    choice = input(
+        "Please Enter 'Y'(Yes) to Confirm or 'N'(No) Cancel: ")
+    while True:
+        choice = choice.upper()
+        if choice == "Y" and len(choice) == 1:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            update_one_attribute_SQL(
+                "Disabled", "status", "Staff", "staffID", staff.ID)
+            print("Delete Staff Successful")
+            input("(Press Enter to continue)")
+            break
+        if choice == "N" and len(choice) == 1:
+            break
+        else:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            print("Delete Book Information")
+            display_staff_info(staff)
+            print("!!!You Have Enter INVALID Value!!!")
+            choice = input(
+                "Please Enter 'Y'(Yes) to Confirm or 'N'(No) Cancel: ")
+
+
+def delete_staff_by_ID():
+    while True:
+        os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+        print("(Enter '-1' to BACK)")
+        staffID = input("ENTER StaffID you want to DELETE: ")
+        if ("ST000" <= staffID <= "ST999" and len(staffID) == 5 and check_duplicate_SQL(staffID, "staffID", "Staff")) or (staffID == "-1" and len(staffID) == 2):
+            break
+        else:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            print("The StaffID NOT EXIST or IS INVALID")
+            input("(Press ENTER to RE-ENTER)")
+    if (staffID == "-1" and len(staffID) == 2):
+        return
+    result = search_using_exact_keywords_MySQL(staffID, "staffID", "Staff")
+    staff = PersonInfo(result[0], result[1], result[2],
+                       result[3], result[4], result[5])
+
+    if staff.status == "Disabled":
+        print("Staff has been already Deleted")
+        input("(Press ENTER to Back)")
+        return
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("Delete Staff Information")
+    display_staff_info(staff)
+    choice = input(
+        "Please Enter 'Y'(Yes) to Confirm or 'N'(No) Cancel: ")
+    while True:
+        choice = choice.upper()
+        if choice == "Y" and len(choice) == 1:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            update_one_attribute_SQL(
+                "Disabled", "status", "Staff", "staffID", staff.ID)
+            print("Delete Staff Successful")
+            input("(Press Enter to continue)")
+            break
+        if choice == "N" and len(choice) == 1:
+            break
+        else:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            print("Delete Book Information")
+            display_staff_info(staff)
+            print("!!!You Have Enter INVALID Value!!!")
+            choice = input(
+                "Please Enter 'Y'(Yes) to Confirm or 'N'(No) Cancel: ")
+
+
+def delete_staff():
+    while True:
+        display_delete_staff_menu()
+        choice = input("ENTER your action: ")
+        while (True):
+            if ("1" <= choice <= "3" and len(choice) == 1) or choice == "-1":
+                if choice == "-1":
+                    break
+                if choice == "1":
+                    search_staff_by_email_to_delete()
+                    break
+                if choice == "2":
+                    search_staff_by_name_to_delete()
+                    break
+                if choice == "3":
+                    delete_staff_by_ID()
+                    break
+            else:
+                display_delete_staff_menu()
+                print("!!!You Have Enter INVALID Value!!!")
+                choice = input("ENTER your action: ")
+        if choice == "-1":
+            break
+
+
+def manage_staff():
+    while True:
+        display_manage_staff_menu()
+        choice = input("ENTER your action: ")
+        while True:
+            if choice == "-1" and len(choice) == 2:
+                break
+            if choice == "1" and len(choice) == 1:
+                search_staff()
+                break
+            if choice == "2" and len(choice) == 1:
+                create_new_staff()
+                break
+            if choice == "3" and len(choice) == 1:
+                edit_staff()
+                break
+            if choice == "4" and len(choice) == 1:
+                delete_staff()
+                break
+            else:
+                display_manage_staff_menu()
+                print("!!!You Have Enter INVALID Value!!!")
+                choice = input("ENTER your action: ")
+        if choice == "-1" and len(choice) == 2:
+            break
+
+
+# Gennerate Report
+# working Top
+def generate_report():
+
+ # Working Bot
+
+    ################################################################
+    # UI
 
 
 def display_member_menu():
@@ -2314,7 +2953,21 @@ def admin_UI():
         while (True):
             if choice == "-1" and len(choice) == 2:
                 break
-
+            if choice == "1" and len(choice) == 1:
+                manage_book()
+                break
+            if choice == "2" and len(choice) == 1:
+                manage_order()
+                break
+            if choice == "3" and len(choice) == 1:
+                manage_member()
+                break
+            if choice == "4" and len(choice) == 1:
+                manage_staff()
+                break
+            if choice == "5" and len(choice) == 1:
+                generate_report()
+                break
             if choice == "6" and len(choice) == 1:
                 edit_personal_information()
                 break
