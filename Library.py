@@ -1518,7 +1518,7 @@ def manage_order():
                 choice = input("ENTER your action: ")
         if choice == "-1" and len(choice) == 2:
             break
-###
+
 ###
 # Manage Member Menu
 
