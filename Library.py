@@ -584,16 +584,7 @@ def insert_new_book():
         newBook.title = input("Title: ")
         newBook.author = input("Author: ")
         newBook.publisher = input("Publisher: ")
-        if len(newBook.title) and len(newBook.author) and len(newBook.publisher) <= 100:
-            break
-        else:
-            if len(newBook.title) > 100:
-                print("The Title is Too Long")
-            if len(newBook.author) > 100:
-                print("The Author is Too Long")
-            if len(newBook.publisher) > 100:
-                print("The Publisher is Too Long")
-            input("(Press ENTER to RE-ENTER)")
+
     newBook.availability = "Available"
     while True:
         os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
@@ -1532,6 +1523,8 @@ def display_manage_member_menu():
 4. Delete Member
 (Enter '-1' to BACK)""")
 
+# Search Member
+
 
 def display_search_member_menu():
     print("""Search Member Menu:
@@ -1571,7 +1564,206 @@ def search_member_by_email():
         # conver email to keyword to search
         display_search_member_by_email(email)
         input("(Press ENTER to Search Again)")
-# edit member
+
+
+def display_search_member_by_name(name):
+    # Extract keywords
+    keywords = name.split(" ")
+    # Build SQL to search
+    sql = f"SELECT memberID, fName, lName, email FROM member WHERE ("
+    for i in range(len(keywords)):
+        if i == 0:
+            sql += f"fName LIKE '%" + keywords[i] + "%'"
+        else:
+            sql += f" OR fName LIKE '%" + keywords[i] + "%'"
+    for i in range(len(keywords)):
+        sql += f"OR lName LIKE '%" + keywords[i] + "%'"
+        sql += ") AND status <> 'Disabled'"
+    results = fetchall_from_MySQL(sql)
+
+    if len(results) > 0:
+        for order in results:
+            print(order)
+
+    else:
+        print("No Member Found")
+
+
+def search_member_by_name():
+    while True:
+        os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+        print("Search Member by Name")
+        print("(Enter '-1' to BACK)")
+        name = input("ENTER Member Name: ")
+        if name == "-1" and len(name) == 2:
+            break
+        # conver email to keyword to search
+        display_search_member_by_name(name)
+        input("(Press ENTER to Search Again)")
+
+
+def search_member():
+    while True:
+        os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+        display_search_member_menu()
+        choice = input("ENTER your action: ")
+        while True:
+            if choice == "-1" and len(choice) == 2:
+                break
+            if choice == "1" and len(choice) == 1:
+                search_member_by_email()
+                break
+            if choice == "2" and len(choice) == 1:
+                search_member_by_name()
+                break
+            else:
+                # CLEAR SCREEN
+                os.system("cls" if os.name == "nt" else "clear")
+                display_search_member_menu()
+                print("!!!You Have Enter INVALID Value!!!")
+                choice = input("ENTER your action: ")
+        if choice == "-1" and len(choice) == 2:
+            break
+
+# Working Top
+# Working
+
+
+def create_new_member():
+    newMember = PersonInfo("", "", "", "", "", "")
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("Please Insert New Member Information")
+    print("(First Name, Last Name, Email, Password)")
+    input("(Press ENTER to continue)")
+    while True:
+        os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+        newMember.title = input("Frist Name: ")
+        newMember.author = input("Last Name: ")
+        newMember.publisher = input("Email: ")
+
+    newBook.availability = "Available"
+    while True:
+        os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+        newBook.shelf = input("Shelf(only one letter from A to Z): ")
+        newBook.shelf = newBook.shelf.upper()
+        if len(newBook.shelf) == 1 and "A" <= newBook.shelf <= "Z":
+            break
+        else:
+            print("!!!You Have Enter INVALID Value!!!")
+            input("(Press ENTER to RE-ENTER)")
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("New Book Information")
+    display_book_info(newBook)
+    choice = input(
+        "Please Enter 'Y'(Yes) to Confirm or 'N'(NO) Cancel: ")
+    while True:
+        if choice == "Y" or "y" and len(choice) == 1:
+            insert_new_book_SQL(newBook)
+            break
+        if choice == "N" or "n" and len(choice) == 1:
+            break
+        else:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            print("New Book Information")
+            display_book_info(newBook)
+            print("!!!You Have Enter INVALID Value!!!")
+            choice = input(
+                "Please Enter 'Y'(Yes) to Confirm or 'N'(NO) Cancel: ")
+
+
+def create_new_member():  # dont touch
+    newOrder = Order()
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("Create New Order")
+    print("(ENTER '-1' to Back)")
+    newOrder.memberID = input("Enter MemberID for New Order: ")
+    while True:
+        if ("MB000" <= newOrder.memberID <= "MB999" and len(newOrder.memberID) == 5 and check_duplicate_SQL(newOrder.memberID, "memberID", "Member")) or (newOrder.memberID == "-1" and len(newOrder.memberID) == 2):
+            break
+        else:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            print("Create New Order")
+            print("(ENTER '-1' to Back)")
+            print("!!!MemberID NOT EXIST or INVALID!!!")
+            newOrder.memberID = input("Enter MemberID for New Order: ")
+    if newOrder.memberID == "-1" and len(newOrder.memberID) == 2:
+        return
+
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("Create New Order")
+    print("(ENTER '-1' to Back)")
+    newOrder.isbn = input("Enter Book ISBN for New Order: ")
+    while True:
+        if ("0000000000000" <= newOrder.isbn <= "9999999999999" and len(newOrder.isbn) == 13 and check_duplicate_SQL(newOrder.isbn, "isbn", "Book")) or (newOrder.isbn == "-1" and len(newOrder.isbn) == 2):
+            break
+        else:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            print("Create New Order")
+            print("(ENTER '-1' to Back)")
+            print("!!!ISBN NOT EXIST or INVALID!!!")
+            newOrder.isbn = input("Enter Book ISBN for New Order: ")
+    if newOrder.isbn == "-1" and len(newOrder.isbn) == 2:
+        return
+
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print("Create New Order")
+    print("(ENTER '-1' to Back)")
+    numberOfRentDays = input("Enter Borrow Time in Days(Up to 30 Days): ")
+    while True:
+        if numberOfRentDays == "-1" and len(numberOfRentDays) == 2:
+            break
+        if len(numberOfRentDays) <= 2:
+            numberOfRentDays.zfill(2)
+            if ("0" <= (numberOfRentDays[0]) <= "9") and ("0" <= (numberOfRentDays[1]) <= "9"):
+                if 1 <= int(numberOfRentDays) <= 30:
+                    break
+        else:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            print("Create New Order")
+            print("(ENTER '-1' to Back)")
+            numberOfRentDays = input(
+                "Enter Borrow Time in Days(Up to 30 Days): ")
+    if numberOfRentDays == "-1" and len(numberOfRentDays) == 2:
+        return
+
+    sql = "SELECT MAX(orderID) FROM `Order`"
+    result = fetchone_from_MySQL(sql)
+    latestOrderID = result[0]
+    newOrder.orderID = str(int(latestOrderID)+1).zfill(6)
+    newOrder.staffID = person.ID
+    newOrder.rentDate = datetime.datetime.now()
+    newOrder.dueDate = newOrder.rentDate.date() + timedelta(days=int(numberOfRentDays))
+    newOrder.status = "On Loan"
+
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    display_new_order_detail(newOrder)
+    choice = input(
+        "Please Enter 'Y'(Yes) to Confirm or 'N'(No) Cancel: ")
+    while True:
+        choice = choice.upper()
+        if choice == "Y" and len(choice) == 1:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            sql = f"""INSERT IGNORE INTO `Order` (orderID, staffID, memberID, isbn, rentDate, dueDate, status)
+VALUES ('{newOrder.orderID}', '{newOrder.staffID}', '{newOrder.memberID}',
+        '{newOrder.isbn}', '{newOrder.rentDate}', '{newOrder.dueDate}', '{newOrder.status}')
+            """
+            update_to_MySQL(sql)
+            update_one_attribute_SQL(
+                "On Loan", "availability", "book", "isbn", newOrder.isbn)
+            print("Create Order Successful")
+            input("(Press Enter to continue)")
+            break
+        if choice == "N" and len(choice) == 1:
+            break
+        else:
+            os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+            print("Update Book Information")
+            display_new_order_detail(newOrder)
+            print("!!!You Have Enter INVALID Value!!!")
+            choice = input(
+                "Please Enter 'Y'(Yes) to Confirm or 'N'(No) Cancel: ")
+# Working Bot
+# Edit member
 
 
 def display_edit_member_menu():
@@ -1807,69 +1999,7 @@ def edit_member():
             break
 
 
-###
-
-
-def display_search_member_by_name(name):
-    # Extract keywords
-    keywords = name.split(" ")
-    # Build SQL to search
-    sql = f"SELECT memberID, fName, lName, email FROM member WHERE ("
-    for i in range(len(keywords)):
-        if i == 0:
-            sql += f"fName LIKE '%" + keywords[i] + "%'"
-        else:
-            sql += f" OR fName LIKE '%" + keywords[i] + "%'"
-    for i in range(len(keywords)):
-        sql += f"OR lName LIKE '%" + keywords[i] + "%'"
-        sql += ") AND status <> 'Disabled'"
-    results = fetchall_from_MySQL(sql)
-
-    if len(results) > 0:
-        for order in results:
-            print(order)
-
-    else:
-        print("No Member Found")
-
-
-def search_member_by_name():
-    while True:
-        os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
-        print("Search Member by Name")
-        print("(Enter '-1' to BACK)")
-        name = input("ENTER Member Name: ")
-        if name == "-1" and len(name) == 2:
-            break
-        # conver email to keyword to search
-        display_search_member_by_name(name)
-        input("(Press ENTER to Search Again)")
-
-
-def search_member():
-    while True:
-        os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
-        display_search_member_menu()
-        choice = input("ENTER your action: ")
-        while True:
-            if choice == "-1" and len(choice) == 2:
-                break
-            if choice == "1" and len(choice) == 1:
-                search_member_by_email()
-                break
-            if choice == "2" and len(choice) == 1:
-                search_member_by_name()
-                break
-            else:
-                # CLEAR SCREEN
-                os.system("cls" if os.name == "nt" else "clear")
-                display_search_member_menu()
-                print("!!!You Have Enter INVALID Value!!!")
-                choice = input("ENTER your action: ")
-        if choice == "-1" and len(choice) == 2:
-            break
-
-
+# Delete Member
 def display_delete_member_menu():
     os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
     print("Delet Member Menu")
