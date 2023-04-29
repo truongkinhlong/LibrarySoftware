@@ -2851,9 +2851,9 @@ def manage_staff():
             break
 
 
-# Gennerate Repor
-# working Top
+# Gennerate Report
 def generate_report():
+
     sql = ("""SELECT 
     (SELECT COUNT(*) FROM Book WHERE availability = 'Available') AS num_available_books,
     (SELECT COUNT(*) FROM Book WHERE availability = 'On Loan') AS num_on_loan_books,
@@ -2869,11 +2869,26 @@ def generate_report():
     amountOfCurrentOverdueOrder = result[3]
     amountOfCurrentMember = result[4]
     amountOfCurrentStaff = result[5]
-
- # Working Bot
-
-    ################################################################
-    # UI
+    os.system("cls" if os.name == "nt" else "clear")  # CLEAR SCREEN
+    print(f"""****Report on {datetime.date.today()}****
+Total Amount of Availabile Books: {amountOfAvailableBooks}
+Total Amount of On Loan Books: {amountOfOnLoanBooks}
+Total Amount of Current On Loan Order: {amountOfCurrentOnLoanOrder}
+Total Amount of Current Overdue Order: {amountOfCurrentOverdueOrder}
+Total Current Member: {amountOfCurrentMember}
+Total Current Staff: {amountOfCurrentStaff}
+****Staff Order****""")
+    sql = "SELECT staffID, fName, lName from Staff Where status = 'Active'"
+    staffresults = fetchall_from_MySQL(sql)
+    for staff in staffresults:
+        sql = f"""SELECT count(*) as orderCount
+From `Order`
+WHERE staffID = '{staff[0]}' AND rentDate LIKE  '{datetime.date.today()}%';"""
+        totalOrder = fetchone_from_MySQL(sql)
+        print(
+            f"ID: {staff[0]} Name: {staff[1]} {staff[2]} ||| Total Order: {totalOrder[0]}")
+    input("(Press ENTER to Back)")
+# UI
 
 
 def display_member_menu():

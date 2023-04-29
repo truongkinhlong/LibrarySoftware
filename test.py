@@ -1,1 +1,2 @@
-print("n" == "y")
+import datetime
+print(datetime.date.today())
