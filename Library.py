@@ -2854,11 +2854,22 @@ def manage_staff():
 # Gennerate Repor
 # working Top
 def generate_report():
-    # amountOfAvailableBooks
-    # amountOfOnLoanBooks
-    # amountOfCurrentOnLoanOrder
-    # amountOfCurrentOverdueOrder
-    # amountOfTodayReturnedBook
+    sql = ("""SELECT 
+    (SELECT COUNT(*) FROM Book WHERE availability = 'Available') AS num_available_books,
+    (SELECT COUNT(*) FROM Book WHERE availability = 'On Loan') AS num_on_loan_books,
+    (SELECT COUNT(*) FROM `Order` WHERE status = 'On Loan') AS num_on_loan_orders,
+    (SELECT COUNT(*) FROM `Order` WHERE status = 'Overdue') AS num_overdue_orders,
+    (SELECT COUNT(*) FROM Member WHERE status = 'Active') AS num_current_members,
+    (SELECT COUNT(*) FROM Staff WHERE status = 'Active') AS num_current_staff
+;""")
+    result = fetchone_from_MySQL(sql)
+    amountOfAvailableBooks = result[0]
+    amountOfOnLoanBooks = result[1]
+    amountOfCurrentOnLoanOrder = result[2]
+    amountOfCurrentOverdueOrder = result[3]
+    amountOfCurrentMember = result[4]
+    amountOfCurrentStaff = result[5]
+
  # Working Bot
 
     ################################################################
