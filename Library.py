@@ -1,7 +1,7 @@
 import os
 import mysql.connector
 import datetime
-from datetime import date, timedelta
+from datetime import datetime, timedelta
 
 
 # classes
@@ -57,7 +57,7 @@ class Order:
         self.returDate = returnDate
 
 ################################################################
-# Function
+# Function Reuseable
 ################################################################
 # Database Function
 
@@ -146,6 +146,19 @@ def search_using_keywords_MySQL_selective_attribute(inputString, attribute, tabl
     # Return Fetchall result from SQL
     return dbcursor.fetchall()
 
+
+def update_order_status_SQL():
+    # get current datetime
+    now = datetime.now()
+
+    # update orders with due date in the past
+    sql = f"UPDATE `Order` SET status = 'Overdue' WHERE dueDate < '{now}'"
+
+    # execute the update statement
+    dbcursor.execute(sql)
+
+    # commit the changes to the database
+    db.commit()
 
 # Login Section
 ################################################################
@@ -3011,6 +3024,7 @@ def admin_UI():
 
 
 # MAIN
+update_order_status_SQL()
 connect_to_database()
 while True:
     welcome_window()
