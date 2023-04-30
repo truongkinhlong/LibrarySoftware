@@ -58,6 +58,7 @@ class Order:
 
 ################################################################
 # Function Reuseable
+# Reuse
 ################################################################
 # Database Function
 
@@ -152,13 +153,15 @@ def update_order_status_SQL():
     now = datetime.now()
 
     # update orders with due date in the past
-    sql = f"UPDATE `Order` SET status = 'Overdue' WHERE dueDate < '{now}'"
+    sql = f"SELECT orderID FROM `Order` WHERE dueDate < '{now}' AND returnDate is NULL;"
 
-    # execute the update statement
-    dbcursor.execute(sql)
+    # fetch all order is overdue
+    result = fetchall_from_MySQL(sql)
 
-    # commit the changes to the database
-    db.commit()
+    for itr in result:
+        sql = f"UPDATE `Order` SET status = 'Overdue' WHERE orderID = '{str(itr)}'"
+        update_to_MySQL(sql)
+
 
 # Login Section
 ################################################################
@@ -3024,8 +3027,9 @@ def admin_UI():
 
 
 # MAIN
-update_order_status_SQL()
+
 connect_to_database()
+# update_order_status_SQL()
 while True:
     welcome_window()
     login_UI()
