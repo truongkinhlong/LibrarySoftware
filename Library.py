@@ -2853,7 +2853,6 @@ def manage_staff():
 
 # Gennerate Report
 def generate_report():
-
     sql = ("""SELECT 
     (SELECT COUNT(*) FROM Book WHERE availability = 'Available') AS num_available_books,
     (SELECT COUNT(*) FROM Book WHERE availability = 'On Loan') AS num_on_loan_books,
